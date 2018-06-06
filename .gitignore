@@ -39,6 +39,7 @@ Saved/**
 *.pdb
 *.exp
 *.VC.db
+*.VC.opendb
 
 #Ignore visual studio build files
 *.target
