@@ -5,12 +5,30 @@
 #include "CoreMinimal.h"
 #include "ProceduralTree.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/PhysicsVolume.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Editor.h"
+#include "Builders/CubeBuilder.h"
 #include "PerlinNoise.h"
-#include "PerlinSpawner.h"
+#include "FastNoise.h"
+//#include "PerlinSpawner.h"
+#include "Components/CapsuleComponent.h"
 #include "Engine/PostProcessVolume.h"
+#include "DrawDebugHelpers.h"
+#include "Animation/SkeletalMeshActor.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "Components/PrimitiveComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "OceanVolume.h"
+#include "EngineUtils.h"
+#include "UObject/ConstructorHelpers.h"
 #include "ForestController.generated.h"
-
+//C:\Program Files\Epic Games\UE_4.18\Engine\Source\Editor\UnrealEd\Classes\Editor\EditorEngine.h
+//C:\Program Files\Epic Games\UE_4.18\Engine\Source\Editor\UnrealEd\Private\EditorEngine.cpp
 //General Log
 DECLARE_LOG_CATEGORY_EXTERN(LogMyGame, Log, All);
 
@@ -126,6 +144,16 @@ private:
 
 	void generateOcean();
 
+	void SpawnObjects();
+
+	void detectViewportVisibilityByRaycast();
+
+	void SpawnPlayer();
+
+public:
+
+	void generateTerrain(UHierarchicalInstancedStaticMeshComponent* hismc);
+
 private:
 	TArray<FVector> oldVectors; //Array to hold all the old Xs
 
@@ -148,17 +176,23 @@ private:
 	double noOfGrids;
 	TArray<double> zValues;
 
+	bool SpawnObjectsComplete;
+
 public:
 	float oceanVolumelengthX;
 	float oceanVolumeWidthY;
 	float oceanVolumeHeightZ;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Spawning Object")
-	TSubclassOf<AProceduralTree> objectOne;
+	//UPROPERTY(EditDefaultsOnly, Category = "Spawning Object")
+	//TSubclassOf<AProceduralTree> objectOne;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Spawning Object")
-	TSubclassOf<AProceduralTree> objectTwo;
+	//UPROPERTY(EditDefaultsOnly, Category = "Spawning Object")
+	//TSubclassOf<AProceduralTree> objectTwo;
+
+	AProceduralTree* objectOne;
+
+	AProceduralTree* objectTwo;
 
 	UPROPERTY(EditAnywhere, Category = "Spawning Object")
 	FVector objectSpawnZOffset;
@@ -177,14 +211,25 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Spawning Land")
 	double noiseDampY;
 
-	UPROPERTY(EditAnywhere, Category = "Spawning Ocean")
-	TSubclassOf<class AActor> oceanBluePrint;
+	//UPROPERTY(EditAnywhere, Category = "Spawning Ocean")
+	//TSubclassOf<class AActor> oceanBluePrint;
+	//AActor* oceanBluePrint;
+
 	//Percentile of all heights in the array covered by water (between 0 to 1)
 	UPROPERTY(EditAnywhere, Category = "Spawning Ocean")
 	double landHeightPercentileCoveredByWater; //NOTE: Have to manually adjust the BP_OceanWater scale
 
 	UPROPERTY(EditAnywhere, Category = "Spawning Ocean")
 	TSubclassOf<class AOceanVolume> postProcessOceanVolume;
+
+	UPROPERTY(EditAnywhere, Category = "Viewport Visibility Raycast Detection")
+	double minRaycastOffset;
+	
+	UPROPERTY(EditAnywhere, Category = "Viewport Visibility Raycast Detection")
+	double maxRaycastOffset;
+
+	UPROPERTY(EditAnywhere, Category = "Viewport Visibility Raycast Detection")
+	FVector raycastApartOffset;
 
 	//Now you have dynamic array benefits and also UPROPERTY()!
 	UPROPERTY()

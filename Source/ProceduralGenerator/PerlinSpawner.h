@@ -4,6 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "PhysicsEngine/BodySetup.h"
+#include "ForestController.h"
+#include "Kismet/GameplayStatics.h"
+#include "UObject/UObjectGlobals.h"
 #include "PerlinSpawner.generated.h"
 
 UCLASS()
@@ -15,6 +21,8 @@ public:
 	// Sets default values for this actor's properties
 	APerlinSpawner();
 
+	void OnConstruction(const FTransform & Transform);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -23,6 +31,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
+private:
+	UHierarchicalInstancedStaticMeshComponent* hismc;
 	
 };

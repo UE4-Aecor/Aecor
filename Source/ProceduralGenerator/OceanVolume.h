@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/PhysicsVolume.h"
 #include "Components/PostProcessComponent.h"
 #include "Components/BoxComponent.h"
 #include "OceanVolume.generated.h"
@@ -31,10 +32,9 @@ public:
 UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 UBoxComponent* BoxContainer;
 
-
 /** Pawn mesh: 1st person view  */
 UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 UPostProcessComponent* PostProcessComp;
 
-	
+
 };

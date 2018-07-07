@@ -10,7 +10,11 @@ public class ProceduralGenerator : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd" });
+
+       // PublicAdditionalPaths.Add("Output19/Source/VictoryBPLibrary");
+
+       // PublicAdditionalLibraries.Add("Output19/Binaries/Win64/UE4Editor-VictoryBPLibrary.dll");
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
