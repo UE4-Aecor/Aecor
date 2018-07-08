@@ -1,0 +1,367 @@
+Begin Object Class=/Script/Engine.Material Name="CausticsMaterial"
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureObjectParameter Name="MaterialExpressionTextureObjectParameter_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionAdd Name="MaterialExpressionAdd_1"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionAppendVector Name="MaterialExpressionAppendVector_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionAppendVector Name="MaterialExpressionAppendVector_1"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionAppendVector Name="MaterialExpressionAppendVector_2"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionAppendVector Name="MaterialExpressionAppendVector_3"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionComponentMask Name="MaterialExpressionComponentMask_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionComponentMask Name="MaterialExpressionComponentMask_1"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionConstant Name="MaterialExpressionConstant_6"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionConstant Name="MaterialExpressionConstant_7"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionLinearInterpolate Name="MaterialExpressionLinearInterpolate_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionLinearInterpolate Name="MaterialExpressionLinearInterpolate_1"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMultiply Name="MaterialExpressionMultiply_3"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMultiply Name="MaterialExpressionMultiply_4"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMultiply Name="MaterialExpressionMultiply_5"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMultiply Name="MaterialExpressionMultiply_6"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMultiply Name="MaterialExpressionMultiply_7"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMultiply Name="MaterialExpressionMultiply_8"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionPanner Name="MaterialExpressionPanner_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionPanner Name="MaterialExpressionPanner_1"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionPanner Name="MaterialExpressionPanner_2"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_1"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_2"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_3"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_4"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_5"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureCoordinate Name="MaterialExpressionTextureCoordinate_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureSample Name="MaterialExpressionTextureSample_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureSample Name="MaterialExpressionTextureSample_1"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureSample Name="MaterialExpressionTextureSample_2"
+   End Object
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   Begin Object Name="MaterialExpressionTextureObjectParameter_0"
+      ParameterName="Texture"
+      ExpressionGUID=CFDB6C2C48B889A68C170282ACA0705A
+      Texture=Texture2D'"/Game/Textures/Noise_SemaElectro1.Noise_SemaElectro1"'
+      SamplerType=SAMPLERTYPE_LinearColor
+      MaterialExpressionEditorX=-272
+      MaterialExpressionEditorY=608
+      MaterialExpressionGuid=1815001443A868DBEB1E0BA7CFFF26D1
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionAdd_1"
+      A=(Expression=MaterialExpressionLinearInterpolate'"CausticsMaterial:MaterialExpressionLinearInterpolate_0"')
+      B=(Expression=MaterialExpressionScalarParameter'"CausticsMaterial:MaterialExpressionScalarParameter_5"')
+      MaterialExpressionEditorX=864
+      MaterialExpressionEditorY=784
+      MaterialExpressionGuid=556938A8463B23705622C3A2A5D48A95
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionAppendVector_0"
+      A=(Expression=MaterialExpressionMultiply'"CausticsMaterial:MaterialExpressionMultiply_3"')
+      B=(Expression=MaterialExpressionMultiply'"CausticsMaterial:MaterialExpressionMultiply_4"')
+      MaterialExpressionEditorX=-960
+      MaterialExpressionEditorY=160
+      MaterialExpressionGuid=4FE3DB84433D9D93E1DB09889D53FCFA
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionAppendVector_1"
+      A=(Expression=MaterialExpressionConstant'"CausticsMaterial:MaterialExpressionConstant_6"')
+      B=(Expression=MaterialExpressionScalarParameter'"CausticsMaterial:MaterialExpressionScalarParameter_3"')
+      MaterialExpressionEditorX=-336
+      MaterialExpressionEditorY=480
+      MaterialExpressionGuid=4FE3DB84433D9D93E1DB09889D53FCFA
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionAppendVector_2"
+      A=(Expression=MaterialExpressionScalarParameter'"CausticsMaterial:MaterialExpressionScalarParameter_2"')
+      B=(Expression=MaterialExpressionConstant'"CausticsMaterial:MaterialExpressionConstant_7"')
+      MaterialExpressionEditorX=-416
+      MaterialExpressionEditorY=128
+      MaterialExpressionGuid=4FE3DB84433D9D93E1DB09889D53FCFA
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionAppendVector_3"
+      A=(Expression=MaterialExpressionScalarParameter'"CausticsMaterial:MaterialExpressionScalarParameter_2"')
+      B=(Expression=MaterialExpressionScalarParameter'"CausticsMaterial:MaterialExpressionScalarParameter_3"')
+      MaterialExpressionEditorX=-320
+      MaterialExpressionEditorY=928
+      MaterialExpressionGuid=4FE3DB84433D9D93E1DB09889D53FCFA
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionComponentMask_0"
+      Input=(Expression=MaterialExpressionTextureCoordinate'"CausticsMaterial:MaterialExpressionTextureCoordinate_0"')
+      R=True
+      MaterialExpressionEditorX=-1335
+      MaterialExpressionEditorY=151
+      MaterialExpressionGuid=3A1DABF54CBAC5CDF7DCCCAA4456E5C9
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionComponentMask_1"
+      Input=(Expression=MaterialExpressionTextureCoordinate'"CausticsMaterial:MaterialExpressionTextureCoordinate_0"')
+      G=True
+      MaterialExpressionEditorX=-1328
+      MaterialExpressionEditorY=256
+      MaterialExpressionGuid=3A1DABF54CBAC5CDF7DCCCAA4456E5C9
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionConstant_6"
+      MaterialExpressionEditorX=-416
+      MaterialExpressionEditorY=464
+      MaterialExpressionGuid=587008E946129CFCB24F44BB102AFA2B
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionConstant_7"
+      MaterialExpressionEditorX=-496
+      MaterialExpressionEditorY=208
+      MaterialExpressionGuid=587008E946129CFCB24F44BB102AFA2B
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionLinearInterpolate_0"
+      A=(Expression=MaterialExpressionLinearInterpolate'"CausticsMaterial:MaterialExpressionLinearInterpolate_1"')
+      B=(Expression=MaterialExpressionTextureSample'"CausticsMaterial:MaterialExpressionTextureSample_2"',Mask=1,MaskR=1,MaskG=1,MaskB=1)
+      MaterialExpressionEditorX=681
+      MaterialExpressionEditorY=659
+      MaterialExpressionGuid=C42579504E8A51759B857098F9B9ABE9
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionLinearInterpolate_1"
+      A=(Expression=MaterialExpressionTextureSample'"CausticsMaterial:MaterialExpressionTextureSample_0"',Mask=1,MaskR=1,MaskG=1,MaskB=1)
+      B=(Expression=MaterialExpressionTextureSample'"CausticsMaterial:MaterialExpressionTextureSample_1"',Mask=1,MaskR=1,MaskG=1,MaskB=1)
+      MaterialExpressionEditorX=464
+      MaterialExpressionEditorY=304
+      MaterialExpressionGuid=45A92BCF44F16B3E005418AAE12306BF
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionMultiply_3"
+      A=(Expression=MaterialExpressionScalarParameter'"CausticsMaterial:MaterialExpressionScalarParameter_0"')
+      B=(Expression=MaterialExpressionComponentMask'"CausticsMaterial:MaterialExpressionComponentMask_0"')
+      MaterialExpressionEditorX=-1120
+      MaterialExpressionEditorY=64
+      MaterialExpressionGuid=ECEB456F43F9D1E662056293D8B5C456
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionMultiply_4"
+      A=(Expression=MaterialExpressionComponentMask'"CausticsMaterial:MaterialExpressionComponentMask_1"')
+      B=(Expression=MaterialExpressionScalarParameter'"CausticsMaterial:MaterialExpressionScalarParameter_1"')
+      MaterialExpressionEditorX=-1136
+      MaterialExpressionEditorY=288
+      MaterialExpressionGuid=ECEB456F43F9D1E662056293D8B5C456
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionMultiply_5"
+      A=(Expression=MaterialExpressionAppendVector'"CausticsMaterial:MaterialExpressionAppendVector_0"')
+      ConstB=0.800000
+      MaterialExpressionEditorX=-454
+      MaterialExpressionEditorY=300
+      MaterialExpressionGuid=8BA38E0F4CD6C13F559D70AA82A3A026
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionMultiply_6"
+      A=(Expression=MaterialExpressionAdd'"CausticsMaterial:MaterialExpressionAdd_1"')
+      B=(Expression=MaterialExpressionScalarParameter'"CausticsMaterial:MaterialExpressionScalarParameter_4"')
+      MaterialExpressionEditorX=1120
+      MaterialExpressionEditorY=880
+      MaterialExpressionGuid=66A07B3D40B94F4FB137CE8454190DCA
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionMultiply_7"
+      A=(Expression=MaterialExpressionAppendVector'"CausticsMaterial:MaterialExpressionAppendVector_0"')
+      ConstB=0.300000
+      MaterialExpressionEditorX=-272
+      MaterialExpressionEditorY=800
+      MaterialExpressionGuid=8BA38E0F4CD6C13F559D70AA82A3A026
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionMultiply_8"
+      A=(Expression=MaterialExpressionAppendVector'"CausticsMaterial:MaterialExpressionAppendVector_3"')
+      ConstB=1.300000
+      MaterialExpressionEditorX=-176
+      MaterialExpressionEditorY=928
+      MaterialExpressionGuid=D1704321499A27F9F665A98D8A04F992
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionPanner_0"
+      Coordinate=(Expression=MaterialExpressionAppendVector'"CausticsMaterial:MaterialExpressionAppendVector_0"')
+      Speed=(Expression=MaterialExpressionAppendVector'"CausticsMaterial:MaterialExpressionAppendVector_2"')
+      MaterialExpressionEditorX=-288
+      MaterialExpressionEditorY=64
+      MaterialExpressionGuid=F1A49A874C96C5140865DF96F9A4F5E6
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionPanner_1"
+      Coordinate=(Expression=MaterialExpressionMultiply'"CausticsMaterial:MaterialExpressionMultiply_5"')
+      Speed=(Expression=MaterialExpressionAppendVector'"CausticsMaterial:MaterialExpressionAppendVector_1"')
+      MaterialExpressionEditorX=-224
+      MaterialExpressionEditorY=368
+      MaterialExpressionGuid=F1A49A874C96C5140865DF96F9A4F5E6
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionPanner_2"
+      Coordinate=(Expression=MaterialExpressionMultiply'"CausticsMaterial:MaterialExpressionMultiply_7"')
+      Speed=(Expression=MaterialExpressionMultiply'"CausticsMaterial:MaterialExpressionMultiply_8"')
+      MaterialExpressionEditorY=832
+      MaterialExpressionGuid=F1A49A874C96C5140865DF96F9A4F5E6
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_0"
+      DefaultValue=1.000000
+      ParameterName="UTiling"
+      ExpressionGUID=0480BC284EC5BCFE5A06BFBBB5212DFB
+      MaterialExpressionEditorX=-1488
+      MaterialExpressionEditorY=48
+      MaterialExpressionGuid=1170F1E844E0D891209C0F997327216B
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_1"
+      DefaultValue=1.000000
+      ParameterName="VTiling"
+      ExpressionGUID=9A22BB43470B81B15469E3821067FD50
+      MaterialExpressionEditorX=-1488
+      MaterialExpressionEditorY=352
+      MaterialExpressionGuid=1170F1E844E0D891209C0F997327216B
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_2"
+      DefaultValue=0.100000
+      ParameterName="PannerSpeedX"
+      ExpressionGUID=21B40F8A440FBC93A1E3B5BB83DE63BE
+      MaterialExpressionEditorX=-976
+      MaterialExpressionEditorY=528
+      MaterialExpressionGuid=85FF2D5F464B600FB596B987117EADE7
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_3"
+      DefaultValue=0.100000
+      ParameterName="PannerSpeedY"
+      ExpressionGUID=E766C01D48472B43CEC2C89725A38D0B
+      MaterialExpressionEditorX=-976
+      MaterialExpressionEditorY=656
+      MaterialExpressionGuid=85FF2D5F464B600FB596B987117EADE7
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_4"
+      DefaultValue=1.000000
+      ParameterName="Intensity"
+      ExpressionGUID=4958AB7A4429EF77DF674DB883919F1C
+      MaterialExpressionEditorX=848
+      MaterialExpressionEditorY=912
+      MaterialExpressionGuid=B009A4FE457206CBCC22D6A5818CE8F9
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_5"
+      DefaultValue=0.100000
+      ParameterName="BaseOffset"
+      ExpressionGUID=EEA54C534BDCA1ED5A800BA740A56BDF
+      MaterialExpressionEditorX=704
+      MaterialExpressionEditorY=816
+      MaterialExpressionGuid=5CACC765480E3733A527A4963E6FCB5B
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionTextureCoordinate_0"
+      MaterialExpressionEditorX=-1648
+      MaterialExpressionEditorY=192
+      MaterialExpressionGuid=E0CF9E8A4B421DA2354EE881D0C86976
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionTextureSample_0"
+      Coordinates=(Expression=MaterialExpressionPanner'"CausticsMaterial:MaterialExpressionPanner_0"')
+      TextureObject=(Expression=MaterialExpressionTextureObjectParameter'"CausticsMaterial:MaterialExpressionTextureObjectParameter_0"')
+      Texture=Texture2D'"/Game/Chameleon/Textures/2K_Masks/T_Mask16.T_Mask16"'
+      MaterialExpressionEditorX=95
+      MaterialExpressionEditorY=59
+      MaterialExpressionGuid=15800FAE4FB69705A68B7A93AF3FF92A
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionTextureSample_1"
+      Coordinates=(Expression=MaterialExpressionPanner'"CausticsMaterial:MaterialExpressionPanner_1"')
+      TextureObject=(Expression=MaterialExpressionTextureObjectParameter'"CausticsMaterial:MaterialExpressionTextureObjectParameter_0"')
+      Texture=Texture2D'"/Game/Textures/Noise_SemaElectro1.Noise_SemaElectro1"'
+      MaterialExpressionEditorX=80
+      MaterialExpressionEditorY=352
+      MaterialExpressionGuid=15800FAE4FB69705A68B7A93AF3FF92A
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="MaterialExpressionTextureSample_2"
+      Coordinates=(Expression=MaterialExpressionPanner'"CausticsMaterial:MaterialExpressionPanner_2"')
+      TextureObject=(Expression=MaterialExpressionTextureObjectParameter'"CausticsMaterial:MaterialExpressionTextureObjectParameter_0"')
+      Texture=Texture2D'"/Game/Textures/Noise_SemaElectro1.Noise_SemaElectro1"'
+      MaterialExpressionEditorX=208
+      MaterialExpressionEditorY=672
+      MaterialExpressionGuid=15800FAE4FB69705A68B7A93AF3FF92A
+      Material=Material'"CausticsMaterial"'
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   EmissiveColor=(Expression=MaterialExpressionMultiply'"MaterialExpressionMultiply_6"')
+   MaterialDomain=MD_LightFunction
+   EditorX=1328
+   EditorY=768
+   Expressions(0)=MaterialExpressionMultiply'"MaterialExpressionMultiply_6"'
+   Expressions(1)=MaterialExpressionTextureCoordinate'"MaterialExpressionTextureCoordinate_0"'
+   Expressions(2)=MaterialExpressionComponentMask'"MaterialExpressionComponentMask_0"'
+   Expressions(3)=MaterialExpressionComponentMask'"MaterialExpressionComponentMask_1"'
+   Expressions(4)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_0"'
+   Expressions(5)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_1"'
+   Expressions(6)=MaterialExpressionMultiply'"MaterialExpressionMultiply_3"'
+   Expressions(7)=MaterialExpressionMultiply'"MaterialExpressionMultiply_4"'
+   Expressions(8)=MaterialExpressionAppendVector'"MaterialExpressionAppendVector_0"'
+   Expressions(9)=MaterialExpressionPanner'"MaterialExpressionPanner_0"'
+   Expressions(10)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_2"'
+   Expressions(11)=MaterialExpressionPanner'"MaterialExpressionPanner_1"'
+   Expressions(12)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_3"'
+   Expressions(13)=MaterialExpressionMultiply'"MaterialExpressionMultiply_5"'
+   Expressions(14)=MaterialExpressionTextureSample'"MaterialExpressionTextureSample_0"'
+   Expressions(15)=MaterialExpressionTextureSample'"MaterialExpressionTextureSample_1"'
+   Expressions(16)=MaterialExpressionLinearInterpolate'"MaterialExpressionLinearInterpolate_1"'
+   Expressions(17)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_4"'
+   Expressions(18)=MaterialExpressionAppendVector'"MaterialExpressionAppendVector_1"'
+   Expressions(19)=MaterialExpressionConstant'"MaterialExpressionConstant_6"'
+   Expressions(20)=MaterialExpressionAppendVector'"MaterialExpressionAppendVector_2"'
+   Expressions(21)=MaterialExpressionConstant'"MaterialExpressionConstant_7"'
+   Expressions(22)=MaterialExpressionTextureSample'"MaterialExpressionTextureSample_2"'
+   Expressions(23)=MaterialExpressionPanner'"MaterialExpressionPanner_2"'
+   Expressions(24)=MaterialExpressionMultiply'"MaterialExpressionMultiply_7"'
+   Expressions(25)=MaterialExpressionAppendVector'"MaterialExpressionAppendVector_3"'
+   Expressions(26)=MaterialExpressionMultiply'"MaterialExpressionMultiply_8"'
+   Expressions(27)=MaterialExpressionLinearInterpolate'"MaterialExpressionLinearInterpolate_0"'
+   Expressions(28)=MaterialExpressionAdd'"MaterialExpressionAdd_1"'
+   Expressions(29)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_5"'
+   Expressions(30)=MaterialExpressionTextureObjectParameter'"MaterialExpressionTextureObjectParameter_0"'
+   ParameterGroupData(0)=(GroupName="None")
+   ParameterGroupData(1)=(GroupName="None")
+   ParameterGroupData(2)=(GroupName="None")
+   ParameterGroupData(3)=(GroupName="None")
+   ParameterGroupData(4)=(GroupName="None")
+   ParameterGroupData(5)=(GroupName="None")
+   ParameterGroupData(6)=(GroupName="None")
+   bCanMaskedBeAssumedOpaque=True
+   StateId=3427DA7844B6AFDBCF307F81A1185CE1
+   ReferencedTextureGuids(0)=053CAAD1481E70B3E55264B7B0BFF93E
+   ThumbnailInfo=SceneThumbnailInfoWithPrimitive'"SceneThumbnailInfoWithPrimitive_0"'
+   LightingGuid=E02C12FB4D1642F0D2039D856F2E2AF2
+End Object

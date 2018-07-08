@@ -1,0 +1,19 @@
+Begin Object Class=/Script/Engine.MaterialInstanceConstant Name="CausticsMaterial_Inst"
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   ParameterStateId=97ECA4AF4104C4BB5AE3F9AB0BE3E33B
+   Parent=Material'"/Game/Materials/CausticsMaterial.CausticsMaterial"'
+   ScalarParameterValues(0)=(ParameterInfo=(Name="BaseOffset"),ParameterValue=0.150000,ExpressionGUID=EEA54C534BDCA1ED5A800BA740A56BDF)
+   ScalarParameterValues(1)=(ParameterInfo=(Name="PannerSpeedX"),ParameterValue=0.020000,ExpressionGUID=21B40F8A440FBC93A1E3B5BB83DE63BE)
+   ScalarParameterValues(2)=(ParameterInfo=(Name="PannerSpeedY"),ParameterValue=0.030000,ExpressionGUID=E766C01D48472B43CEC2C89725A38D0B)
+   ScalarParameterValues(3)=(ParameterInfo=(Name="UTiling"),ParameterValue=0.750000,ExpressionGUID=0480BC284EC5BCFE5A06BFBBB5212DFB)
+   ScalarParameterValues(4)=(ParameterInfo=(Name="VTiling"),ParameterValue=0.700000,ExpressionGUID=9A22BB43470B81B15469E3821067FD50)
+   ScalarParameterValues(5)=(ParameterInfo=(Name="RefractionDepthBias"))
+   TextureParameterValues(0)=(ParameterInfo=(Name="Texture"),ParameterValue=Texture2D'"/Game/Textures/Noise_SemaElectro1.Noise_SemaElectro1"',ExpressionGUID=CFDB6C2C48B889A68C170282ACA0705A)
+   BasePropertyOverrides=(OpacityMaskClipValue=0.333300,ShadingModel=MSM_Unlit)
+   ReferencedTextureGuids(0)=053CAAD1481E70B3E55264B7B0BFF93E
+   ThumbnailInfo=SceneThumbnailInfoWithPrimitive'"SceneThumbnailInfoWithPrimitive_0"'
+   LightingGuid=7373BE9849ABFA8BD6FF96AD0D5E672A
+End Object

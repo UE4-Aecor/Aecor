@@ -22,6 +22,9 @@
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Components/DirectionalLightComponent.h"
+#include "Components/LightComponent.h"
+#include "Runtime/Engine/Classes/Engine/DirectionalLight.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "OceanVolume.h"
 #include "EngineUtils.h"
@@ -177,6 +180,16 @@ private:
 	TArray<double> zValues;
 
 	bool SpawnObjectsComplete;
+
+	//For Ocean Surface:
+	AActor* OceanSpawnActor;
+	FVector OceanSpawnLoc;
+	FRotator OceanSpawnRot;
+
+	//For Water Caustics:
+	TArray<AActor*> foundWaterCaustics;
+	ADirectionalLight* foundWaterCausticsComponent;
+	UClass* foundWaterCausticsName;
 
 public:
 	float oceanVolumelengthX;

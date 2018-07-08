@@ -54,6 +54,7 @@ void AForestController::BeginPlay()
 		}
 	}
 
+	UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), "WaterCaustics", foundWaterCaustics);
 
 	SpawnObjects();
 
@@ -75,6 +76,27 @@ void AForestController::Tick(float DeltaTime)
 		}
 	}
 	//detectViewportVisibilityByRaycast();
+
+	if (OceanSpawnActor && OceanSpawnActor != nullptr)
+	{
+		if (foundWaterCaustics[0])
+		{
+			foundWaterCausticsComponent = Cast<ADirectionalLight>(foundWaterCaustics[0]);
+			if (UGameplayStatics::GetPlayerPawn(this->GetWorld(), 0)->GetActorLocation().Z > OceanSpawnLoc.Z - 100)
+			{
+				foundWaterCausticsComponent->GetLightComponent()->SetMobility(EComponentMobility::Movable);
+				foundWaterCausticsComponent->GetLightComponent()->SetVisibility(false);
+
+			}
+			else
+			{
+				foundWaterCausticsComponent->GetLightComponent()->SetMobility(EComponentMobility::Movable);
+				foundWaterCausticsComponent->GetLightComponent()->SetVisibility(true);
+			}
+		}
+	}
+
+
 }
 
 FVector AForestController::generateVector()
@@ -204,14 +226,14 @@ void AForestController::generateOcean()
 	zValues.Sort([](const double& LHS, const double& RHS) {return LHS < RHS; });
 
 	float zVal = zValues[FMath::FloorToFloat(landHeightPercentileCoveredByWater * (float)noOfGrids)-1]; //0 doesn't work; fix later
-	FVector OceanSpawnLoc = { (float) (minX + maxX) / 2, (float) (minY + maxY) / 2, zVal };
-	FRotator OceanSpawnRot = FRotator(0, 0, 0);
+	OceanSpawnLoc = { (float) (minX + maxX) / 2, (float) (minY + maxY) / 2, zVal };
+	OceanSpawnRot = FRotator(0, 0, 0);
 	FActorSpawnParameters oceanSpawnParams;
 	//GetWorld()->SpawnActor<AActor>(oceanBluePrint->GetClass(), OceanSpawnLoc, OceanSpawnRot,oceanSpawnParams);
 	TArray<AActor*> foundOceanSpawns;
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), "OceanSpawn", foundOceanSpawns);
-	AActor* OceanSpawnActor = Cast<AActor>(foundOceanSpawns[0]);
-	OceanSpawnActor->SetActorLocationAndRotation(OceanSpawnLoc + FVector(0,0,1000), OceanSpawnRot);
+	OceanSpawnActor = Cast<AActor>(foundOceanSpawns[0]);
+	OceanSpawnActor->SetActorLocationAndRotation(OceanSpawnLoc, OceanSpawnRot);
 
 	//postProcessOceanVolume->Set;
 	FActorSpawnParameters oceanVolumeSpawnParams;
