@@ -13,12 +13,12 @@ AForestController::AForestController()
 	PrimaryActorTick.bCanEverTick = true;
 
 	//Initialize land spawn values
-	perlinWidth = 200;
-	perlinHeight = 200;
+	perlinWidth = 400;//200
+	perlinHeight = 400;//200
 	perlinSeed = FMath::RandRange(0, 2000);
-	perlinMaxHeight = 150;
-	noiseDampX = 0.3;
-	noiseDampY = 0.3;
+	perlinMaxHeight = 300;//150
+	noiseDampX = 0.4;
+	noiseDampY = 0.4;
 	objectSpawnZOffset = { 0, 0, 525 };
 	landHeightPercentileCoveredByWater = 0.95;
 	minRaycastOffset = 100;
@@ -55,6 +55,7 @@ void AForestController::BeginPlay()
 	}
 
 	UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), "WaterCaustics", foundWaterCaustics);
+	UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), "OceanFog", foundFogs);
 
 	SpawnObjects();
 
@@ -94,6 +95,20 @@ void AForestController::Tick(float DeltaTime)
 				foundWaterCausticsComponent->GetLightComponent()->SetVisibility(true);
 			}
 		}
+
+		/*if (foundFogs[0])
+		{
+			foundFogActor = Cast<AExponentialHeightFog>(foundFogs[0]);
+			if (UGameplayStatics::GetPlayerPawn(this->GetWorld(), 0)->GetActorLocation().Z > OceanSpawnLoc.Z - 100)
+			{
+				foundFog Actor->GetComponent()->SetFogDensity(1);
+
+			}
+			else
+			{
+				foundWaterCausticsComponent->GetLightComponent()->SetVisibility(true);
+			}
+		}*/
 	}
 
 
@@ -147,7 +162,7 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 	noiseOffsetY = 0;
 
 	if (GetWorld()) {
-		int axisArrayYCounter = 0;
+		//int axisArrayYCounter = 0;
 		for (int y = 0; y < perlinHeight; ++y)
 		{
 			noiseOffsetY += noiseDampY;
@@ -155,10 +170,11 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 
 			arrayOfTerrainGenerationAxises.AddUninitialized(1, 0);
 
-			int axisArrayXCounter = 0;
+			//int axisArrayXCounter = 0;
 			for (int x = 0; x < perlinWidth; ++x)
 			{
-				arrayOfTerrainGenerationAxises.Columns[axisArrayYCounter].AddNewRow();
+				//arrayOfTerrainGenerationAxises.Columns[axisArrayYCounter].AddNewRow();
+				arrayOfTerrainGenerationAxises.Columns[y].AddNewRow();
 				noiseOffsetX += noiseDampX;
 				//double perlinX = (double)x / (double)perlinWidth - 0.5;
 				double perlinX = (double)noiseOffsetX / (double)perlinWidth - 0.5;
@@ -174,12 +190,13 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 				//For testing purposes:
 				hismc->AddInstance(FTransform(SpawnLoc * 100 + theOffset));
 
-				arrayOfTerrainGenerationAxises.Columns[axisArrayYCounter].Rows[axisArrayXCounter] = SpawnLoc * 100 + theOffset;
+				arrayOfTerrainGenerationAxises.Columns[y].Rows[x] = SpawnLoc * 100 + theOffset;
+				//arrayOfTerrainGenerationAxises.Columns[axisArrayYCounter].Rows[axisArrayXCounter] = SpawnLoc * 100 + theOffset;
 
-				axisArrayXCounter++;
+				//axisArrayXCounter++;
 			}
 
-			axisArrayYCounter++;
+			//axisArrayYCounter++;
 		}
 	}
 }

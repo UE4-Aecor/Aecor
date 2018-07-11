@@ -29,6 +29,7 @@ void APerlinSpawner::OnConstruction(const FTransform & Transform)
 	hismc->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	hismc->SetCollisionResponseToAllChannels(ECR_Block);
 	hismc->SetMobility(EComponentMobility::Static);
+	//hismc->Bounds.BoxExtent.Z = 100000;
 
 	AForestController* ForestController = GetWorld()->SpawnActor<AForestController>();
 	ForestController->generateTerrain(hismc);

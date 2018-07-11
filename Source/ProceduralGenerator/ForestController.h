@@ -25,6 +25,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Components/LightComponent.h"
 #include "Runtime/Engine/Classes/Engine/DirectionalLight.h"
+#include "Runtime/Engine/Classes/Engine/ExponentialHeightFog.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "OceanVolume.h"
 #include "EngineUtils.h"
@@ -190,6 +191,9 @@ private:
 	TArray<AActor*> foundWaterCaustics;
 	ADirectionalLight* foundWaterCausticsComponent;
 	UClass* foundWaterCausticsName;
+
+	TArray<AActor*> foundFogs;
+	AExponentialHeightFog* foundFogActor;
 
 public:
 	float oceanVolumelengthX;
