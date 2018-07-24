@@ -5,7 +5,7 @@
 
 
 //General Log
-DEFINE_LOG_CATEGORY(LogMyGame);
+DEFINE_LOG_CATEGORY(PerlinLog);
 // Sets default values
 AForestController::AForestController()
 {
@@ -13,12 +13,14 @@ AForestController::AForestController()
 	PrimaryActorTick.bCanEverTick = true;
 
 	//Initialize land spawn values
-	perlinWidth = 400;//200
-	perlinHeight = 400;//200
+	perlinWidth = 600;//200
+	perlinHeight = 600;//200
 	perlinSeed = FMath::RandRange(0, 2000);
-	perlinMaxHeight = 300;//150
-	noiseDampX = 0.4;
-	noiseDampY = 0.4;
+	perlinMaxHeight = 150;//150
+	//noiseDampX = 0.3;
+	//noiseDampY = 0.3;
+	noiseDampX = 0.3f;
+	noiseDampY = 0.3f;
 	objectSpawnZOffset = { 0, 0, 525 };
 	landHeightPercentileCoveredByWater = 0.95;
 	minRaycastOffset = 100;
@@ -29,7 +31,9 @@ AForestController::AForestController()
 	//ConstructorHelpers::FObjectFinder<AProceduralTree> objectOne(TEXT("Blueprint'/Game/ProceduralTree1.ProceduralTree1'"));
 	//ConstructorHelpers::FObjectFinder<AProceduralTree> objectTwo(TEXT("Blueprint'/Game/ProceduralTree1.ProceduralTree2'"));
 	SpawnObjectsComplete = false;
-
+	//total map size is in (mapsize km * mapsize km)
+	mapSize = 1200;
+	isInitialLevel = false;
 
 
 
@@ -44,22 +48,35 @@ void AForestController::BeginPlay()
 
 	//generateTerrain();
 
-	generateOcean();
+	FLatentActionInfo LatentInfo;
+	UGameplayStatics::UnloadStreamLevel(this, "/Game/Levels/UEDPIE_0_CentralQuadrantLeft", LatentInfo);
+	UGameplayStatics::UnloadStreamLevel(this, "/Game/Levels/UEDPIE_0_CentralQuadrantRight", LatentInfo);
 
-	for (int i = 0; i < arrayOfTerrainGenerationAxises.Columns.Num(); i++) {
-		for (int j = 0; j < arrayOfTerrainGenerationAxises.Columns[i].Rows.Num(); j++) {
-			ArrayOfGeneratedX.Add(arrayOfTerrainGenerationAxises.Columns[i].Rows[j].X);
-			ArrayOfGeneratedY.Add(arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Y);
-			ArrayOfGeneratedZ.Add(arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Z);
-		}
-	}
+	TArray<AActor*> foundTerrains;
+	
+	UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), "PerlinSpawner", foundTerrains);
+	APerlinSpawner* foundTerrain = Cast<APerlinSpawner>(foundTerrains[0]);
+	perlinActorLocation = foundTerrain->GetActorLocation();
+	UHierarchicalInstancedStaticMeshComponent* foundHISMC = Cast<UHierarchicalInstancedStaticMeshComponent>(foundTerrain->GetComponentByClass(UHierarchicalInstancedStaticMeshComponent::StaticClass()));
+	generateTerrain(foundHISMC);
+
+	//FActorSpawnParameters perlinSpawnParams;
+	//APerlinSpawner* perlinSpawner = GetWorld()->SpawnActor<APerlinSpawner>(perlinSpawner->GetClass(), FVector(0,0,0), FRotator(0, 0, 0), perlinSpawnParams);
+
+	findMinMaxAndZVals(arrayOfTerrainGenerationAxises);
+
+	generateOcean();
 
 	UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), "WaterCaustics", foundWaterCaustics);
 	UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), "OceanFog", foundFogs);
 
-	SpawnObjects();
+	//SpawnObjects();
 
 	SpawnPlayer();
+
+	//test:
+	FString screenSizeXStr = FString::SanitizeFloat((float)foundFogs.Num());
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
 
 }
 
@@ -96,19 +113,21 @@ void AForestController::Tick(float DeltaTime)
 			}
 		}
 
-		/*if (foundFogs[0])
+		if (foundFogs[0])
 		{
 			foundFogActor = Cast<AExponentialHeightFog>(foundFogs[0]);
 			if (UGameplayStatics::GetPlayerPawn(this->GetWorld(), 0)->GetActorLocation().Z > OceanSpawnLoc.Z - 100)
 			{
-				foundFog Actor->GetComponent()->SetFogDensity(1);
+				//foundFog Actor->GetComponent()->SetFogDensity(1);
+				foundFogActor->SetActorHiddenInGame(true);
 
 			}
 			else
 			{
-				foundWaterCausticsComponent->GetLightComponent()->SetVisibility(true);
+				//set this back after testing
+				foundFogActor->SetActorHiddenInGame(false);
 			}
-		}*/
+		}
 	}
 
 
@@ -116,16 +135,15 @@ void AForestController::Tick(float DeltaTime)
 
 FVector AForestController::generateVector()
 {
-	float indexY = FMath::FRandRange(0, arrayOfTerrainGenerationAxises.Columns.Num() - 1);
-	float indexX = FMath::FRandRange(0, arrayOfTerrainGenerationAxises.Columns[0].Rows.Num() - 1);
+	float indexY = 0;
+	float indexX = 0;
+	int arrayChooser = 0;
+	FVector passBack = { 0,0,0 };
 
-	FVector passBack = arrayOfTerrainGenerationAxises.Columns[indexY].Rows[indexX];
 
-	/*if (isOccupied(oldVectors, passBack))
-	{
-		//generate new X if overused
-		passBack = generateVector();
-	}*/
+	indexY = FMath::FRandRange(0, arrayOfTerrainGenerationAxises.Columns.Num() - 1);
+	indexX = FMath::FRandRange(0, arrayOfTerrainGenerationAxises.Columns[0].Rows.Num() - 1);
+	passBack = arrayOfTerrainGenerationAxises.Columns[indexY].Rows[indexX];
 
 	return passBack;
 }
@@ -154,56 +172,151 @@ bool AForestController::isDistanced(FVector inOne, FVector inTwo)
 	}
 	return passBack;
 }
+
+
+void AForestController::InstantiateHISMC(int x, int y, UHierarchicalInstancedStaticMeshComponent* hismc, FVector perlinLoc)
+{
+	if (y >= perlinLoc.Y / 100 - perlinHeight / 2
+		&& y < perlinLoc.Y / 100 + perlinHeight / 2
+		&& x >= perlinLoc.X / 100 - perlinWidth / 2
+		&& x < perlinLoc.X / 100 + perlinWidth / 2)
+	{//Because spawn loc is 100 times larger than x or y
+		//hismc->AddInstance(FTransform(SpawnLoc * 100 + theOffset));
+		//if (y < 25 && y > -25 && x < 25 && x > -25)
+		if (y == 0 && x == 0)
+		{
+			//FString screenSizeXStr = FString::SanitizeFloat((float)arrayOfTerrainGenerationAxises.Columns[mapSize / 2].Rows[mapSize / 2].Z);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
+		}
+		hismc->AddInstance(FTransform(arrayOfTerrainGenerationAxises.Columns[y + mapSize / 2].Rows[x + mapSize / 2]));
+	}
+}
+
 void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponent* hismc)
 {
 	//Perlin Noise:
 	PerlinNoise pn(perlinSeed);
 
 	noiseOffsetY = 0;
+	int testcounter = 0;
 
 	if (GetWorld()) {
-		//int axisArrayYCounter = 0;
-		for (int y = 0; y < perlinHeight; ++y)
-		{
-			noiseOffsetY += noiseDampY;
-			noiseOffsetX = 0;
 
-			arrayOfTerrainGenerationAxises.AddUninitialized(1, 0);
 
-			//int axisArrayXCounter = 0;
-			for (int x = 0; x < perlinWidth; ++x)
-			{
-				//arrayOfTerrainGenerationAxises.Columns[axisArrayYCounter].AddNewRow();
-				arrayOfTerrainGenerationAxises.Columns[y].AddNewRow();
-				noiseOffsetX += noiseDampX;
-				//double perlinX = (double)x / (double)perlinWidth - 0.5;
-				double perlinX = (double)noiseOffsetX / (double)perlinWidth - 0.5;
-				//double perlinY = (double)y / (double)perlinHeight - 0.5;
-				double perlinY = (double)noiseOffsetY / (double)perlinHeight - 0.5;
+		//for (int y = 0; y < perlinHeight; ++y)
+		//for (int y = perlinActorLocation.Y - perlinHeight/2; y < perlinActorLocation.Y + perlinHeight/2; ++y)
+		//Note: Cannot be in the same class, as the smaller class need to call on the array the ForestController Owns
+		for (int y = -mapSize / 2; y < mapSize / 2; ++y)
+		{//600 - 400/2 = 400; 600 + 400/2 = 800; -600 - 400/2 = -800; -600 + 400/2 = -400 <-- formula correct
 
-				randomHeight = (double)FMath::RandRange(0, 10) * (double)0.1;
-				FVector SpawnLoc = FVector(x, y, pn.noise(10 * perlinX, 10 * perlinY, 0.8) * perlinMaxHeight - (perlinMaxHeight / 4.5));
-				FRotator SpawnRot = FRotator(0, 0, 0);
 
-				FVector vectorToOrigin = { SpawnLoc.X * 50, SpawnLoc.Y * 50, 0 };
-				FVector theOffset = { -2000, -2000, 0 };
-				//For testing purposes:
-				hismc->AddInstance(FTransform(SpawnLoc * 100 + theOffset));
+				noiseOffsetY += noiseDampY;
 
-				arrayOfTerrainGenerationAxises.Columns[y].Rows[x] = SpawnLoc * 100 + theOffset;
-				//arrayOfTerrainGenerationAxises.Columns[axisArrayYCounter].Rows[axisArrayXCounter] = SpawnLoc * 100 + theOffset;
+				noiseOffsetX = 0;
 
-				//axisArrayXCounter++;
+				arrayOfTerrainGenerationAxises.AddUninitialized(1, 0);
+
+				//for (int x = 0; x < perlinWidth; ++x)
+				int counterDeduction = 0;
+				for (int x = -mapSize / 2; x < mapSize / 2; ++x)
+				{
+
+					//arrayOfTerrainGenerationAxises.Columns[axisArrayYCounter].AddNewRow()
+					//Quadrants won't work
+					FVector SpawnLoc;
+					FRotator SpawnRot;
+
+					if (x <= perlinWidth/2 && x >= -perlinWidth/2 && y <= perlinHeight/2 && y >= -perlinHeight/2)
+					{	
+						//Without trying extra damp:
+						//hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(x,2)+ FGenericPlatformMath::Pow(y, 2));
+						//maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(100, 2) + FGenericPlatformMath::Pow(100, 2));
+						//float scaledFactor = hypotenuseFromOrigin * 1.27 / maxHypotenuseFromOrigin;
+
+						//With trying extra damp:
+
+						//200,200: pw start=(100,50),(-50,100); maxhypfromorigin bet. (0,50) hfo = x-50
+						//300,300: pw start=(150,100),(-100,150); maxhypfromorigin bet. (0,50)  hfo = x-100
+						//600,600: pw start=(300,250),(-250,-300); maxhypfromorigin bet. (0,50)  hfo = x-250
+						if (((x <= perlinWidth/2 && x >= perlinWidth / 2 -50)||(x <= -perlinWidth / 2 +50 && x >= -perlinWidth / 2))
+							&& ((y <= perlinHeight/2 && y >= perlinHeight / 2 -50) || (y <= -perlinHeight / 2 +50 && y >= -perlinHeight / 2)))
+						{
+							hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(x) - 250, 2) + FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(y) - 250, 2));
+							maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
+							scaledFactor = hypotenuseFromOrigin * 1 / maxHypotenuseFromOrigin;
+						} 
+						if (x <= perlinWidth/2 - 51 && x >= -perlinWidth / 2 + 51
+							&& ((y <= perlinHeight / 2 && y >= perlinHeight / 2 - 50) || (y <= -perlinHeight / 2 + 50 && y >= -perlinHeight / 2)))
+						{
+							hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(y) - 250, 2));
+							maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
+							scaledFactor = hypotenuseFromOrigin * 1 / maxHypotenuseFromOrigin;
+						}
+						if (((x <= perlinWidth / 2 && x >= perlinWidth / 2 - 50) || (x <= -perlinWidth / 2 + 50 && x >= -perlinWidth / 2)) 
+							&& y <= perlinHeight / 2 - 51 && y >= -perlinHeight / 2 + 51)
+						{
+							hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(x) - 250, 2));
+							maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
+							scaledFactor = hypotenuseFromOrigin * 1 / maxHypotenuseFromOrigin;
+						}
+						if (x <= perlinWidth / 2 - 51 && x >= -perlinWidth / 2 + 51 && y <= perlinHeight / 2 - 51 && y >= -perlinHeight / 2 + 51)
+						{
+							scaledFactor = 0;
+						}
+						
+						noiseOffsetX += noiseDampX * (double) scaledFactor;
+						noiseOffsetY = noiseOffsetY - noiseDampY + noiseDampY * (double)scaledFactor;
+
+						double perlinX = (double)noiseOffsetX / (double)perlinWidth - 0.5;
+						double perlinY = (double)noiseOffsetY / (double)perlinHeight - 0.5;
+
+						float scaledMaxHeight = perlinMaxHeight * scaledFactor;
+						SpawnLoc = FVector(x, y, pn.noise(10 * perlinX, 10 * perlinY, 0.8) * scaledMaxHeight - (scaledMaxHeight / 4.5));
+						SpawnRot = FRotator(0, 0, 0);
+						noiseOffsetY = noiseOffsetY + noiseDampY - noiseDampY * (double) scaledFactor;
+					}
+					else {
+
+						noiseOffsetX += noiseDampX;
+
+						//double perlinX = (double)x / (double)perlinWidth - 0.5;
+						double perlinX = (double)noiseOffsetX / (double)perlinWidth - 0.5;
+						//double perlinY = (double)y / (double)perlinHeight - 0.5;
+						double perlinY = (double)noiseOffsetY / (double)perlinHeight - 0.5;
+
+						//May have to modify this value for a particular range --> for perlinMaxHeight, and then plug it back into the array
+						SpawnLoc = FVector(x, y, pn.noise(10 * perlinX, 10 * perlinY, 0.8) * perlinMaxHeight - (perlinMaxHeight / 4.5));
+						SpawnRot = FRotator(0, 0, 0);
+					}
+
+					FVector vectorToOrigin = { SpawnLoc.X * 50, SpawnLoc.Y * 50, 0 };
+					FVector theOffset = { 50, 50, 0 };
+
+					arrayOfTerrainGenerationAxises.Columns[y + mapSize / 2].AddNewRow();
+					arrayOfTerrainGenerationAxises.Columns[y + mapSize / 2].Rows[x + mapSize / 2] = SpawnLoc * 100 + theOffset;
+
+					//for testing purpose:
+					if (x <= 125 && x >= -125 && y <= 125 && y >= -125)
+					{
+
+					}
+					else
+					{
+						InstantiateHISMC(x, y, hismc, perlinActorLocation);
+					}
+
+					/*
+						screenSizeXStr = "noiseDampY is:" + FString::SanitizeFloat((float)noiseDampY);
+						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
+						UE_LOG(PerlinLog, Warning, TEXT("noiseDampY is: %s"), *screenSizeXStr);*/
 			}
-
-			//axisArrayYCounter++;
 		}
 	}
+	FString screenSizeXStr = FString::SanitizeFloat((float)testcounter);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
 }
-
-void AForestController::generateOcean()
+void AForestController::findMinMaxAndZVals(FTerrainGenerationGrid terrainGenArray)
 {
-
 	//Calculate position for Ocean relative to the generated terrain
 	maxX = -10000;
 	minX = 10000;
@@ -212,33 +325,37 @@ void AForestController::generateOcean()
 
 	noOfGrids = 0;
 
-	for (int i = 0; i < arrayOfTerrainGenerationAxises.Columns.Num(); i++)
+	for (int i = 0; i < terrainGenArray.Columns.Num(); i++)
 	{
-		for (int j = 0; j < arrayOfTerrainGenerationAxises.Columns[i].Rows.Num(); j++)
+		for (int j = 0; j < terrainGenArray.Columns[i].Rows.Num(); j++)
 		{
-			if (arrayOfTerrainGenerationAxises.Columns[i].Rows[j].X < minX) {
-				minX = arrayOfTerrainGenerationAxises.Columns[i].Rows[j].X;
+			if (terrainGenArray.Columns[i].Rows[j].X < minX) {
+				minX = terrainGenArray.Columns[i].Rows[j].X;
 			}
-			if (arrayOfTerrainGenerationAxises.Columns[i].Rows[j].X > maxX) {
-				maxX = arrayOfTerrainGenerationAxises.Columns[i].Rows[j].X;
+			if (terrainGenArray.Columns[i].Rows[j].X > maxX) {
+				maxX = terrainGenArray.Columns[i].Rows[j].X;
 			}
-			if (arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Y < minY) {
-				minY = arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Y;
+			if (terrainGenArray.Columns[i].Rows[j].Y < minY) {
+				minY = terrainGenArray.Columns[i].Rows[j].Y;
 			}
-			if (arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Y > maxY) {
-				maxY = arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Y;
+			if (terrainGenArray.Columns[i].Rows[j].Y > maxY) {
+				maxY = terrainGenArray.Columns[i].Rows[j].Y;
 			}
-			if (arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Z < minZ) {
-				minZ = arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Z;
+			if (terrainGenArray.Columns[i].Rows[j].Z < minZ) {
+				minZ = terrainGenArray.Columns[i].Rows[j].Z;
 			}
-			if (arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Z > maxZ) {
-				maxZ = arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Z;
+			if (terrainGenArray.Columns[i].Rows[j].Z > maxZ) {
+				maxZ = terrainGenArray.Columns[i].Rows[j].Z;
 			}
 
-			zValues.Add(arrayOfTerrainGenerationAxises.Columns[i].Rows[j].Z);
+			zValues.Add(terrainGenArray.Columns[i].Rows[j].Z);
 			noOfGrids++;
 		}
 	}
+}
+
+void AForestController::generateOcean()
+{
 
 	zValues.Sort([](const double& LHS, const double& RHS) {return LHS < RHS; });
 
@@ -264,7 +381,8 @@ void AForestController::generateOcean()
 
 	oceanVolumelengthX = maxX - minX;
 	oceanVolumeWidthY = maxY - minY;
-	oceanVolumeHeightZ = OceanSpawnLoc.Z / 2 - minZ-75;
+	//oceanVolumeHeightZ = OceanSpawnLoc.Z / 2.95f - minZ-75;
+	oceanVolumeHeightZ = OceanSpawnLoc.Z / 2;
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *TheFloatStr);
 
 	FVector BoxSize = { oceanVolumelengthX,oceanVolumeWidthY,oceanVolumeHeightZ };
@@ -453,4 +571,5 @@ void AForestController::SpawnPlayer()
 	APawn* mainCharacter = UGameplayStatics::GetPlayerPawn(this->GetWorld(), 0);
 	mainCharacter->SetActorTransform(FTransform(FVector((minX + maxX) / 2, (minY + maxY) / 2, maxZ + 50)));
 }
+
 

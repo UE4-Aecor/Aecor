@@ -28,12 +28,11 @@ void APerlinSpawner::OnConstruction(const FTransform & Transform)
 	hismc->bGenerateOverlapEvents = true;
 	hismc->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	hismc->SetCollisionResponseToAllChannels(ECR_Block);
-	hismc->SetMobility(EComponentMobility::Static);
+	hismc->SetMobility(EComponentMobility::Movable);
 	//hismc->Bounds.BoxExtent.Z = 100000;
 
-	AForestController* ForestController = GetWorld()->SpawnActor<AForestController>();
-	ForestController->generateTerrain(hismc);
-	ForestController->SetActorEnableCollision(true);
+	//AForestController* ForestController = GetWorld()->SpawnActor<AForestController>();
+	//ForestController->generateTerrain(hismc);
 
 }
 

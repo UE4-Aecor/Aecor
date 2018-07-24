@@ -13,7 +13,7 @@
 #include "Builders/CubeBuilder.h"
 #include "PerlinNoise.h"
 #include "FastNoise.h"
-//#include "PerlinSpawner.h"
+#include "PerlinSpawner.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "DrawDebugHelpers.h"
@@ -26,16 +26,17 @@
 #include "Components/LightComponent.h"
 #include "Runtime/Engine/Classes/Engine/DirectionalLight.h"
 #include "Runtime/Engine/Classes/Engine/ExponentialHeightFog.h"
+#include "Runtime/Engine/Classes/Engine/LevelStreaming.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "OceanVolume.h"
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
+#include "GenericPlatform/GenericPlatformMath.h"
 #include "ForestController.generated.h"
 //C:\Program Files\Epic Games\UE_4.18\Engine\Source\Editor\UnrealEd\Classes\Editor\EditorEngine.h
 //C:\Program Files\Epic Games\UE_4.18\Engine\Source\Editor\UnrealEd\Private\EditorEngine.cpp
 //General Log
-DECLARE_LOG_CATEGORY_EXTERN(LogMyGame, Log, All);
-
+DECLARE_LOG_CATEGORY_EXTERN(PerlinLog, Log, All);
 USTRUCT()
 struct FTerrainGenerationColumn
 {
@@ -146,6 +147,8 @@ private:
 
 	bool isDistanced(FVector inOne, FVector inTwo); //check dist between pts
 
+	void findMinMaxAndZVals(FTerrainGenerationGrid terrainGenArray);
+
 	void generateOcean();
 
 	void SpawnObjects();
@@ -155,6 +158,8 @@ private:
 	void SpawnPlayer();
 
 public:
+
+	void InstantiateHISMC(int x, int y, UHierarchicalInstancedStaticMeshComponent* hismc, FVector perlinLoc);
 
 	void generateTerrain(UHierarchicalInstancedStaticMeshComponent* hismc);
 
@@ -194,6 +199,13 @@ private:
 
 	TArray<AActor*> foundFogs;
 	AExponentialHeightFog* foundFogActor;
+
+	FVector perlinActorLocation;
+
+	int mapSize;
+	float hypotenuseFromOrigin;
+	float maxHypotenuseFromOrigin;
+	float scaledFactor;
 
 public:
 	float oceanVolumelengthX;
@@ -248,10 +260,18 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Viewport Visibility Raycast Detection")
 	FVector raycastApartOffset;
 
+	UPROPERTY(EditAnywhere, Category = "Set Initial Level")
+	bool isInitialLevel;
+	
 	//Now you have dynamic array benefits and also UPROPERTY()!
 	UPROPERTY()
 	FTerrainGenerationGrid arrayOfTerrainGenerationAxises;
+
+
+	UPROPERTY(EditAnywhere, Category = "SpawningPerlin")
+	TSubclassOf<class APerlinSpawner> perlinSpawner;
 	
+
 
 	
 };
