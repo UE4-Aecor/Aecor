@@ -35,6 +35,8 @@ AForestController::AForestController()
 	mapSize = 1200;
 	isInitialLevel = false;
 
+	X0Y0Loaded = false;
+
 
 
 
@@ -130,7 +132,16 @@ void AForestController::Tick(float DeltaTime)
 		}
 	}
 
-
+	TArray<AActor*> foundTerrains;
+	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), APerlinSpawner::StaticClass(), foundTerrains);
+	for (int i = 0; i < foundTerrains.Num(); i++)
+	{
+		FString levelName = foundTerrains[i]->GetLevel()->GetOuter()->GetName();
+		if (levelName == "SafeShallowsX0Y0")
+		{
+			X0Y0Loaded = true;
+		}
+	}
 }
 
 FVector AForestController::generateVector()
@@ -296,14 +307,15 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 					arrayOfTerrainGenerationAxises.Columns[y + mapSize / 2].Rows[x + mapSize / 2] = SpawnLoc * 100 + theOffset;
 
 					//for testing purpose:
-					if (x <= 125 && x >= -125 && y <= 125 && y >= -125)
+					//RIGHT NOW, ONLY LEVEL MANAGER WOULD GENERATE LANDSCAPE
+					/*if (x <= 125 && x >= -125 && y <= 125 && y >= -125)
 					{
 
 					}
 					else
 					{
 						InstantiateHISMC(x, y, hismc, perlinActorLocation);
-					}
+					}*/
 
 					/*
 						screenSizeXStr = "noiseDampY is:" + FString::SanitizeFloat((float)noiseDampY);

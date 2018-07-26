@@ -26,6 +26,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+
 	void GenerateTerrain(AForestController* foundForestController,UHierarchicalInstancedStaticMeshComponent* hismc);
 
 protected:

@@ -270,6 +270,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "SpawningPerlin")
 	TSubclassOf<class APerlinSpawner> perlinSpawner;
+
+public:
+	bool X0Y0Loaded;
+	APerlinSpawner* X0Y0;
 	
 
 

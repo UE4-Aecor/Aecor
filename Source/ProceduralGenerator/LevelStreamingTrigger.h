@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
+#include "PerlinSpawner.h"
 #include "LevelStreamingTrigger.generated.h"
 
 UCLASS()
@@ -42,6 +43,11 @@ private:
 		void OverlapEnds(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	//void OverlapEnds(AActor* OverlappedActor, AActor* OtherActor);
 
+
+private:
+	TArray<AActor*> foundTerrains;
+	APerlinSpawner* PerlinSpawner;
+	bool isOverlappedAtLeastOnce;
 
 	
 	

@@ -17,7 +17,7 @@ void APerlinSpawner::OnConstruction(const FTransform & Transform)
 {
 
 	RegisterAllComponents();
-	hismc->ClearInstances();
+	//hismc->ClearInstances();
 
 	UStaticMesh* Rockmesh = LoadObject<UStaticMesh>(nullptr, TEXT("StaticMesh'/Game/StarterContent/Props/SM_Rock.SM_Rock'"));
 	hismc->SetStaticMesh(Rockmesh);

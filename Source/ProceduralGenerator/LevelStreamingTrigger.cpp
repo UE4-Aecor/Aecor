@@ -12,9 +12,11 @@ ALevelStreamingTrigger::ALevelStreamingTrigger()
 	OverlapVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapVolume"));
 	OverlapVolume->bGenerateOverlapEvents = true;
 	RootComponent = OverlapVolume;
+	isOverlappedAtLeastOnce = false;
 
 	//OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &ALevelStreamingTrigger::OverlapBegins);
 	//OverlapVolume->OnComponentEndOverlap.AddUniqueDynamic(this, &ALevelStreamingTrigger::OverlapEnds);
+
 }
 
 // Called when the game starts or when spawned
@@ -37,18 +39,30 @@ void ALevelStreamingTrigger::OverlapBegins(UPrimitiveComponent* OverlappedCompon
 	if (OtherActor->IsA(ACharacter::StaticClass()))
 	{
 		ACharacter* MyCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
-		if (OtherActor == MyCharacter && LevelToLoad != "")
+		if (!isOverlappedAtLeastOnce)
 		{
-			FString screenSizeXStr = "Triggered!!!";
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
-			FLatentActionInfo LatentInfo;
-			UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LatentInfo);
+			if (OtherActor == MyCharacter && LevelToLoad != "")
+			{
+				FString screenSizeXStr = "Triggered!!!";
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
+				FLatentActionInfo LatentInfo;
+				UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LatentInfo);
+
+				isOverlappedAtLeastOnce = true;
+			}
+		}
+		else
+		{
+			PerlinSpawner->SetActorHiddenInGame(false);
 		}
 	}
 	
 }
 void ALevelStreamingTrigger::OverlapEnds(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	UGameplayStatics::GetAllActorsWithTag(this->GetWorld(), "PerlinSpawnerX0Y0", foundTerrains);
+	PerlinSpawner = Cast<APerlinSpawner>(foundTerrains[0]);
+
 	FString screenSizeXStr = "Leaver1!!!";
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
 	if (OtherActor->IsA(ACharacter::StaticClass()))
@@ -60,8 +74,9 @@ void ALevelStreamingTrigger::OverlapEnds(UPrimitiveComponent* OverlappedComponen
 		{
 			FString screenSizeXStr = "Leaver!!!";
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
-			FLatentActionInfo LatentInfo;
-			UGameplayStatics::UnloadStreamLevel(this, LevelToLoad, LatentInfo);
+			/*FLatentActionInfo LatentInfo;
+			UGameplayStatics::UnloadStreamLevel(this, LevelToLoad, LatentInfo);*/
+			PerlinSpawner->SetActorHiddenInGame(true);
 		}
 	}
 }

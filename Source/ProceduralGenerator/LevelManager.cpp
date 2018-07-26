@@ -8,8 +8,8 @@ ALevelManager::ALevelManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	perlinWidth = 200;
-	perlinHeight = 200;
+	perlinWidth = 600;
+	perlinHeight = 600;
 	isLoaded = false;
 }
 
@@ -25,22 +25,23 @@ void ALevelManager::BeginPlay()
 	TArray<AActor*> foundTerrains;
 	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), APerlinSpawner::StaticClass(), foundTerrains);
 
+	FString screenSizeXStr = foundTerrains[0]->GetClass()->GetName();
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
+
 	for (int i = 0; i < foundTerrains.Num(); i++)
 	{
-		//FString screenSizeXStr = foundTerrains[i]->GetFName().ToString();
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
 		if (foundTerrains[i]->GetFName().ToString() == PerlinSpawnerName)
 		{
-			FString screenSizeXStr = "Works!";
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
 
 			APerlinSpawner* foundTerrain = Cast<APerlinSpawner>(foundTerrains[i]);
 			perlinActorLocation = foundTerrain->GetActorLocation();
 			UHierarchicalInstancedStaticMeshComponent* foundHISMC = Cast<UHierarchicalInstancedStaticMeshComponent>(foundTerrain->GetComponentByClass(UHierarchicalInstancedStaticMeshComponent::StaticClass()));
 
-			if (!isLoaded)
+			//if (!isLoaded) Doesn't work
+			if (!foundForestController->X0Y0Loaded ||PerlinSpawnerName != "PerlinSpawnerX0Y0_2")
 			{
 				GenerateTerrain(foundForestController, foundHISMC);
+				foundForestController->X0Y0 = foundTerrain;
 			}
 		}
 	}
@@ -65,4 +66,5 @@ void ALevelManager::GenerateTerrain(AForestController* ForestController, UHierar
 	hismc->SetWorldLocation(FVector(0, 0, 0));
 	isLoaded = true;
 }
+
 
