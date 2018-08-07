@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ForestController.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "ForestController.h"
+#include "LevelStreamingTrigger.h"
 #include "LevelManager.generated.h"
 
 UCLASS()
@@ -28,6 +30,12 @@ public:
 private:
 
 	void GenerateTerrain(AForestController* foundForestController,UHierarchicalInstancedStaticMeshComponent* hismc);
+
+	//Spawns trigger that spawns the terrain
+	void SpawnTriggers();
+
+private:
+	AForestController* foundForestController;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Spawning Land")

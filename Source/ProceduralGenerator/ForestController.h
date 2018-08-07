@@ -32,6 +32,10 @@
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 #include "GenericPlatform/GenericPlatformMath.h"
+#include "MyUserWidget.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/CanvasPanel.h"
+#include "Components/BackgroundBlur.h"
 #include "ForestController.generated.h"
 //C:\Program Files\Epic Games\UE_4.18\Engine\Source\Editor\UnrealEd\Classes\Editor\EditorEngine.h
 //C:\Program Files\Epic Games\UE_4.18\Engine\Source\Editor\UnrealEd\Private\EditorEngine.cpp
@@ -157,6 +161,7 @@ private:
 
 	void SpawnPlayer();
 
+	void GenerateSlopeHeightmap(int x, int y, int slopeOuterLengthX, int slopeOuterLengthY, bool isUphill, bool isDownhill);
 public:
 
 	void InstantiateHISMC(int x, int y, UHierarchicalInstancedStaticMeshComponent* hismc, FVector perlinLoc);
@@ -202,7 +207,6 @@ private:
 
 	FVector perlinActorLocation;
 
-	int mapSize;
 	float hypotenuseFromOrigin;
 	float maxHypotenuseFromOrigin;
 	float scaledFactor;
@@ -211,6 +215,7 @@ public:
 	float oceanVolumelengthX;
 	float oceanVolumeWidthY;
 	float oceanVolumeHeightZ;
+	int mapSize;
 
 protected:
 	//UPROPERTY(EditDefaultsOnly, Category = "Spawning Object")
@@ -271,11 +276,25 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "SpawningPerlin")
 	TSubclassOf<class APerlinSpawner> perlinSpawner;
 
+	UPROPERTY(EditAnywhere, Category = "CharacterBars")
+	TSubclassOf<class UMyUserWidget> CharacterBarsWidgetTemplate;
+
+	UPROPERTY()
+	UMyUserWidget* CharacterBarsWidget;
+
+
 public:
-	bool X0Y0Loaded;
+	//bool X0Y0Loaded;
 	APerlinSpawner* X0Y0;
 	
+private:
+	float zVal;
 
+	UBackgroundBlur* backgroundBlur;
+	UWidget* BloodOverlay;
+	UWidget* VignetteOverlay;
+	UWidget* CompleteBlackout;
+	float deathTimer;
 
 	
 };

@@ -22,7 +22,7 @@ AForestController::AForestController()
 	noiseDampX = 0.3f;
 	noiseDampY = 0.3f;
 	objectSpawnZOffset = { 0, 0, 525 };
-	landHeightPercentileCoveredByWater = 0.95;
+	landHeightPercentileCoveredByWater = 0.99;
 	minRaycastOffset = 100;
 	maxRaycastOffset = 10000;
 	raycastApartOffset = { 1,1,1 };
@@ -35,7 +35,8 @@ AForestController::AForestController()
 	mapSize = 1200;
 	isInitialLevel = false;
 
-	X0Y0Loaded = false;
+	//X0Y0Loaded = false;
+	deathTimer = 0;
 
 
 
@@ -76,10 +77,51 @@ void AForestController::BeginPlay()
 
 	SpawnPlayer();
 
-	//test:
-	FString screenSizeXStr = FString::SanitizeFloat((float)foundFogs.Num());
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
 
+	if (CharacterBarsWidgetTemplate)
+	{
+		CharacterBarsWidget = CreateWidget<UMyUserWidget>(this->GetGameInstance(), CharacterBarsWidgetTemplate);
+		CharacterBarsWidget->AddToViewport();
+	}
+
+	if (UCanvasPanel* OuterPanel = Cast<UCanvasPanel>(CharacterBarsWidget->GetWidgetFromName("OuterPanel")))
+	{
+		TArray<UWidget*> ArrayOfWidgets;
+		CharacterBarsWidget->WidgetTree->GetChildWidgets(OuterPanel, ArrayOfWidgets);
+
+		for (int i = 0; i < ArrayOfWidgets.Num(); i++)
+		{
+
+			if (ArrayOfWidgets[i]->GetName() == "BackgroundBlur_0")
+			{
+				backgroundBlur = Cast<UBackgroundBlur>(ArrayOfWidgets[i]);
+				backgroundBlur->SetRenderOpacity(0);
+
+			}
+			if (ArrayOfWidgets[i]->GetName() == "BloodOverlay")
+			{
+				BloodOverlay = ArrayOfWidgets[i];
+				BloodOverlay->SetRenderOpacity(0);
+
+			}
+			if (ArrayOfWidgets[i]->GetName() == "VignetteOverlay")
+			{
+				VignetteOverlay = ArrayOfWidgets[i];
+				VignetteOverlay->SetRenderOpacity(0);
+
+			}
+			if (ArrayOfWidgets[i]->GetName() == "CompleteBlackout")
+			{
+				CompleteBlackout = ArrayOfWidgets[i];
+				CompleteBlackout->SetRenderOpacity(0);
+
+			}
+		}
+
+		/*
+		FString screenSizeXStr = FString::SanitizeFloat((float)backgroundBlur->GetDesiredSize().Y);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);*/
+	}
 }
 
 // Called every frame
@@ -132,7 +174,7 @@ void AForestController::Tick(float DeltaTime)
 		}
 	}
 
-	TArray<AActor*> foundTerrains;
+	/*TArray<AActor*> foundTerrains;
 	UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), APerlinSpawner::StaticClass(), foundTerrains);
 	for (int i = 0; i < foundTerrains.Num(); i++)
 	{
@@ -141,7 +183,90 @@ void AForestController::Tick(float DeltaTime)
 		{
 			X0Y0Loaded = true;
 		}
+	}*/
+
+	if (UGameplayStatics::GetPlayerCharacter(this->GetWorld(), 0)->GetActorLocation().Z < zVal - 100)
+	{
+		CharacterBarsWidget->initialAirEfficiency -= DeltaTime/30; //deltatime = 1
 	}
+	else
+	{
+		CharacterBarsWidget->initialAirEfficiency = 1;
+	}
+	if (backgroundBlur && VignetteOverlay && BloodOverlay && CompleteBlackout)
+	{
+		//Blurry effect for Thirst, Hunger and Air Efficiency
+		if (CharacterBarsWidget->initialThirst <= 0.1 || CharacterBarsWidget->initialHunger <= 0.1 || CharacterBarsWidget->initialAirEfficiency <= 0.2)
+		{
+			float majorDeterminent = FMath::Min3(CharacterBarsWidget->initialThirst, CharacterBarsWidget->initialHunger, CharacterBarsWidget->initialAirEfficiency);
+
+			backgroundBlur->SetRenderOpacity(1 - majorDeterminent * 5);//0.2 * 5 = 1 (Blurriest); 0.0 * 5 = 0 (No Blur);
+		}
+		else {
+			if (backgroundBlur->GetRenderOpacity() > 0)
+			{
+				backgroundBlur->SetRenderOpacity(backgroundBlur->GetRenderOpacity() - 0.01);
+			}
+		}
+		
+		//Special Vignette effect for air efficiency aside from adjusting the blurriness
+		if (CharacterBarsWidget->initialAirEfficiency <= 0.2 || CharacterBarsWidget->initialHealth <= 0.2)
+		{
+			float majorDeterminent = FGenericPlatformMath::Min(CharacterBarsWidget->initialAirEfficiency, CharacterBarsWidget->initialHealth);
+			VignetteOverlay->SetRenderOpacity(1 - majorDeterminent * 5);//0.2 * 5 = 1 (Blurriest); 0.0 * 5 = 0 (No Blur);
+		}
+		else
+		{
+			if (VignetteOverlay->GetRenderOpacity() > 0)
+			{
+				VignetteOverlay->SetRenderOpacity(VignetteOverlay->GetRenderOpacity() - 0.01);
+			}
+		}
+
+
+		//Blood Effect for Health
+		if (CharacterBarsWidget->initialHealth <= 0.2)
+		{
+			BloodOverlay->SetRenderOpacity((1 - CharacterBarsWidget->initialHealth * 5) / 2);//0.2 * 5 = 1 (Blurriest); 0.0 * 5 = 0 (No Blur);
+		} 
+		else {
+			if (BloodOverlay->GetRenderOpacity() > 0)
+			{
+				BloodOverlay->SetRenderOpacity(BloodOverlay->GetRenderOpacity() - 0.01);
+			}
+		}
+
+		if (CharacterBarsWidget->initialHealth <= 0 || CharacterBarsWidget->initialAirEfficiency <= 0)
+		{
+			deathTimer += DeltaTime;
+			CompleteBlackout->SetRenderOpacity(deathTimer / 5);
+
+			if (deathTimer >= 5)
+			{
+				FString screenSizeXStr = "GAME OVER!";
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
+			}
+		}
+		else 
+		{
+			if (CompleteBlackout->GetRenderOpacity() > 0)
+			{
+				deathTimer = 0;
+				CompleteBlackout->SetRenderOpacity(CompleteBlackout->GetRenderOpacity() - 0.01);
+			}
+		}
+	}
+
+
+
+	CharacterBarsWidget->initialHunger -= DeltaTime /(60 * 48);
+	CharacterBarsWidget->initialThirst -= DeltaTime /(60 * 24);
+
+	if (CharacterBarsWidget->initialHunger <= 0 || CharacterBarsWidget->initialThirst <= 0)
+	{
+		CharacterBarsWidget->initialHealth -= DeltaTime / 5;
+	}
+
 }
 
 FVector AForestController::generateVector()
@@ -199,7 +324,53 @@ void AForestController::InstantiateHISMC(int x, int y, UHierarchicalInstancedSta
 			//FString screenSizeXStr = FString::SanitizeFloat((float)arrayOfTerrainGenerationAxises.Columns[mapSize / 2].Rows[mapSize / 2].Z);
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
 		}
-		hismc->AddInstance(FTransform(arrayOfTerrainGenerationAxises.Columns[y + mapSize / 2].Rows[x + mapSize / 2]));
+		if (x < 600 && x > -601 && y < 600 && y > -601) 
+		{
+			if (arrayOfTerrainGenerationAxises.Columns.Num() != 0)
+			hismc->AddInstance(FTransform(arrayOfTerrainGenerationAxises.Columns[y + mapSize / 2].Rows[x + mapSize / 2]));
+		}
+	}
+}
+
+//The slope takes around 50m*50m of space
+void AForestController::GenerateSlopeHeightmap(int x, int y, int slopeOuterLengthX, int slopeOuterLengthY, bool isUphill, bool isDownhill)
+{// 1. X: (250 to 300)||(-250 to -300) & Y: (250 to 300)||(-250 to -300) 
+ // 2. X: (249 to -249) & Y: (250 to 300)||(-250 to -300) 
+ // 3. X: (250 to 300)||(-250 to -300) & Y: (249 to -249)
+ // 4. X: (249 to -249) & Y: (249 to -249)
+
+ // 1. X: (300 to 350)||(-300 to -350) & Y: (300 to 350)||(-300 to -350)
+ // 2. X: (299 to -299) & Y: (300 to 350)||(-300 to -350)
+ // 3. X: (300 to 350)||(-300 to -350) & Y: (299 to -299)
+ // 4. X: (299 to -299) & Y: (299 to -299)
+	if (((x <= slopeOuterLengthX / 2 && x >= slopeOuterLengthX / 2 - 50) || (x <= -slopeOuterLengthX / 2 + 50 && x >= -slopeOuterLengthX / 2))
+		&& ((y <= slopeOuterLengthY / 2 && y >= slopeOuterLengthY / 2 - 50) || (y <= -slopeOuterLengthY / 2 + 50 && y >= -slopeOuterLengthY / 2)))
+	{
+		hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(x) - (slopeOuterLengthX / 2 - 50), 2) + FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(y) - (slopeOuterLengthY / 2 - 50), 2));
+		maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
+		scaledFactor = hypotenuseFromOrigin * 1.4 / maxHypotenuseFromOrigin;
+	}
+	if (x <= slopeOuterLengthX / 2 - 51 && x >= -slopeOuterLengthX / 2 + 51
+		&& ((y <= slopeOuterLengthY / 2 && y >= slopeOuterLengthY / 2 - 50) || (y <= -slopeOuterLengthY / 2 + 50 && y >= -slopeOuterLengthY / 2)))
+	{
+		hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(y) - (slopeOuterLengthY / 2 - 50), 2));
+		maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
+		scaledFactor = hypotenuseFromOrigin * 1.4 / maxHypotenuseFromOrigin;
+	}
+	if (((x <= slopeOuterLengthX / 2 && x >= slopeOuterLengthX / 2 - 50) || (x <= -slopeOuterLengthX / 2 + 50 && x >= -slopeOuterLengthX / 2))
+		&& y <= slopeOuterLengthY / 2 - 51 && y >= -slopeOuterLengthY / 2 + 51)
+	{
+		hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(x) - (slopeOuterLengthX / 2 - 50), 2));
+		maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
+		scaledFactor = hypotenuseFromOrigin * 1.4 / maxHypotenuseFromOrigin;
+	}
+	if (x <= slopeOuterLengthX / 2 - 51 && x >= -slopeOuterLengthX / 2 + 51 && y <= slopeOuterLengthY / 2 - 51 && y >= -slopeOuterLengthY / 2 + 51)
+	{
+		scaledFactor = 0;
+	}
+	if (isDownhill)
+	{
+		scaledFactor = 1 - scaledFactor;
 	}
 }
 
@@ -237,8 +408,10 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 					FVector SpawnLoc;
 					FRotator SpawnRot;
 
-					if (x <= perlinWidth/2 && x >= -perlinWidth/2 && y <= perlinHeight/2 && y >= -perlinHeight/2)
-					{	
+					//if (x <= perlinWidth/2 && x >= -perlinWidth/2 && y <= perlinHeight/2 && y >= -perlinHeight/2
+					//	|| (x <= 800 / 2 && x >= -800 / 2 && y <= 800 / 2 && y >= -800 / 2
+					//		&& !(x <= 700 / 2 && x >= -700 / 2 && y <= 700 / 2 && y >= -700 / 2)))
+				//	{	
 						//Without trying extra damp:
 						//hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(x,2)+ FGenericPlatformMath::Pow(y, 2));
 						//maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(100, 2) + FGenericPlatformMath::Pow(100, 2));
@@ -249,28 +422,20 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 						//200,200: pw start=(100,50),(-50,100); maxhypfromorigin bet. (0,50) hfo = x-50
 						//300,300: pw start=(150,100),(-100,150); maxhypfromorigin bet. (0,50)  hfo = x-100
 						//600,600: pw start=(300,250),(-250,-300); maxhypfromorigin bet. (0,50)  hfo = x-250
-						if (((x <= perlinWidth/2 && x >= perlinWidth / 2 -50)||(x <= -perlinWidth / 2 +50 && x >= -perlinWidth / 2))
-							&& ((y <= perlinHeight/2 && y >= perlinHeight / 2 -50) || (y <= -perlinHeight / 2 +50 && y >= -perlinHeight / 2)))
+
+						scaledFactor = 1;
+
+						if (x <= perlinWidth / 2 && x >= -perlinWidth / 2 && y <= perlinHeight / 2 && y >= -perlinHeight / 2)
 						{
-							hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(x) - 250, 2) + FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(y) - 250, 2));
-							maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
-							scaledFactor = hypotenuseFromOrigin * 1 / maxHypotenuseFromOrigin;
-						} 
-						if (x <= perlinWidth/2 - 51 && x >= -perlinWidth / 2 + 51
-							&& ((y <= perlinHeight / 2 && y >= perlinHeight / 2 - 50) || (y <= -perlinHeight / 2 + 50 && y >= -perlinHeight / 2)))
-						{
-							hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(y) - 250, 2));
-							maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
-							scaledFactor = hypotenuseFromOrigin * 1 / maxHypotenuseFromOrigin;
+							GenerateSlopeHeightmap(x, y, perlinWidth, perlinHeight, true, false);
 						}
-						if (((x <= perlinWidth / 2 && x >= perlinWidth / 2 - 50) || (x <= -perlinWidth / 2 + 50 && x >= -perlinWidth / 2)) 
-							&& y <= perlinHeight / 2 - 51 && y >= -perlinHeight / 2 + 51)
+						if (x <= 800 / 2 && x >= -800 / 2 && y <= 800 / 2 && y >= -800 / 2
+							&& !(x <= 700 / 2 && x >= -700 / 2 && y <= 700 / 2 && y >= -700 / 2))
 						{
-							hypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(FGenericPlatformMath::Abs(x) - 250, 2));
-							maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
-							scaledFactor = hypotenuseFromOrigin * 1 / maxHypotenuseFromOrigin;
+							GenerateSlopeHeightmap(x, y, 800, 800, false, true);
 						}
-						if (x <= perlinWidth / 2 - 51 && x >= -perlinWidth / 2 + 51 && y <= perlinHeight / 2 - 51 && y >= -perlinHeight / 2 + 51)
+						if (x <= 1200 / 2 && x >= -1200 / 2 && y <= 1200 / 2 && y >= -1200 / 2
+							&& !(x <= 800 / 2 && x >= -800 / 2 && y <= 800 / 2 && y >= -800 / 2))
 						{
 							scaledFactor = 0;
 						}
@@ -285,7 +450,7 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 						SpawnLoc = FVector(x, y, pn.noise(10 * perlinX, 10 * perlinY, 0.8) * scaledMaxHeight - (scaledMaxHeight / 4.5));
 						SpawnRot = FRotator(0, 0, 0);
 						noiseOffsetY = noiseOffsetY + noiseDampY - noiseDampY * (double) scaledFactor;
-					}
+				/*	}
 					else {
 
 						noiseOffsetX += noiseDampX;
@@ -298,7 +463,7 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 						//May have to modify this value for a particular range --> for perlinMaxHeight, and then plug it back into the array
 						SpawnLoc = FVector(x, y, pn.noise(10 * perlinX, 10 * perlinY, 0.8) * perlinMaxHeight - (perlinMaxHeight / 4.5));
 						SpawnRot = FRotator(0, 0, 0);
-					}
+					}*/
 
 					FVector vectorToOrigin = { SpawnLoc.X * 50, SpawnLoc.Y * 50, 0 };
 					FVector theOffset = { 50, 50, 0 };
@@ -308,6 +473,12 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 
 					//for testing purpose:
 					//RIGHT NOW, ONLY LEVEL MANAGER WOULD GENERATE LANDSCAPE
+
+					//if (FGenericPlatformMath::Fmod(FGenericPlatformMath::Abs(x), 200) == 0 && FGenericPlatformMath::Fmod(FGenericPlatformMath::Abs(y), 200))
+					//{
+
+					//}
+
 					/*if (x <= 125 && x >= -125 && y <= 125 && y >= -125)
 					{
 
@@ -371,7 +542,7 @@ void AForestController::generateOcean()
 
 	zValues.Sort([](const double& LHS, const double& RHS) {return LHS < RHS; });
 
-	float zVal = zValues[FMath::FloorToFloat(landHeightPercentileCoveredByWater * (float)noOfGrids)-1]; //0 doesn't work; fix later
+	zVal = zValues[FMath::FloorToFloat(landHeightPercentileCoveredByWater * (float)noOfGrids)-1]; //0 doesn't work; fix later
 	OceanSpawnLoc = { (float) (minX + maxX) / 2, (float) (minY + maxY) / 2, zVal };
 	OceanSpawnRot = FRotator(0, 0, 0);
 	FActorSpawnParameters oceanSpawnParams;
@@ -583,5 +754,4 @@ void AForestController::SpawnPlayer()
 	APawn* mainCharacter = UGameplayStatics::GetPlayerPawn(this->GetWorld(), 0);
 	mainCharacter->SetActorTransform(FTransform(FVector((minX + maxX) / 2, (minY + maxY) / 2, maxZ + 50)));
 }
-
 

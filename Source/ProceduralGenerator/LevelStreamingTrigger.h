@@ -8,6 +8,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
 #include "PerlinSpawner.h"
+#include "ForestController.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "LevelStreamingTrigger.generated.h"
 
 UCLASS()
@@ -27,6 +29,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
+	void GenerateTerrain(AForestController* ForestController, UHierarchicalInstancedStaticMeshComponent* hismc);
+	void GenerateHISMCInstances();
+
 protected:
 	UPROPERTY(EditAnywhere)
 		FName LevelToLoad;
@@ -49,6 +54,22 @@ private:
 	APerlinSpawner* PerlinSpawner;
 	bool isOverlappedAtLeastOnce;
 
-	
-	
+protected:
+	UPROPERTY(EditAnywhere, Category = "Spawning Land")
+		int perlinWidth;
+	UPROPERTY(EditAnywhere, Category = "Spawning Land")
+		int perlinHeight;
+	UPROPERTY(EditAnywhere, Category = "Spawning Land")
+		FString PerlinSpawnerName;
+	UPROPERTY(EditAnywhere, Category = "Trigger Bounds")
+		int XBound;
+	UPROPERTY(EditAnywhere, Category = "Trigger Bounds")
+		int YBound;
+	UPROPERTY(EditAnywhere, Category = "Trigger Bounds")
+		int ZBound;
+
+private:
+	FVector perlinActorLocation;
+	bool isLoaded;
+
 };
