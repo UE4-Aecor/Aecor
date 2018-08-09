@@ -38,10 +38,22 @@ AForestController::AForestController()
 	//X0Y0Loaded = false;
 	deathTimer = 0;
 
+	IsWidgetSet = false;
 
+	/*static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/CircularBars/RadialAirBar.RadialAirBar'"));
+	if (Material.Succeeded()) {
+		MaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, Material.Object);
 
+	}*/
 
+	AirEfficiencyDelay = 3;
+	AirEfficiencyTimer = 0;
+	flashChangeOpacity = 1;
+	opacityChangingUpwards = false;
 
+	oldValue = 1;
+	newValue = 0.95f;
+	updatingAirEfficiencyBar = false;
 }
 
 // Called when the game starts or when spawned
@@ -83,45 +95,127 @@ void AForestController::BeginPlay()
 		CharacterBarsWidget = CreateWidget<UMyUserWidget>(this->GetGameInstance(), CharacterBarsWidgetTemplate);
 		CharacterBarsWidget->AddToViewport();
 	}
-
-	if (UCanvasPanel* OuterPanel = Cast<UCanvasPanel>(CharacterBarsWidget->GetWidgetFromName("OuterPanel")))
+	if (CharacterBarsWidget)
 	{
-		TArray<UWidget*> ArrayOfWidgets;
-		CharacterBarsWidget->WidgetTree->GetChildWidgets(OuterPanel, ArrayOfWidgets);
-
-		for (int i = 0; i < ArrayOfWidgets.Num(); i++)
+		if (UCanvasPanel* OuterPanel = Cast<UCanvasPanel>(CharacterBarsWidget->GetWidgetFromName("OuterPanel")))
 		{
+			TArray<UWidget*> ArrayOfWidgets;
+			CharacterBarsWidget->WidgetTree->GetChildWidgets(OuterPanel, ArrayOfWidgets);
 
-			if (ArrayOfWidgets[i]->GetName() == "BackgroundBlur_0")
+			for (int i = 0; i < ArrayOfWidgets.Num(); i++)
 			{
-				backgroundBlur = Cast<UBackgroundBlur>(ArrayOfWidgets[i]);
-				backgroundBlur->SetRenderOpacity(0);
 
-			}
-			if (ArrayOfWidgets[i]->GetName() == "BloodOverlay")
-			{
-				BloodOverlay = ArrayOfWidgets[i];
-				BloodOverlay->SetRenderOpacity(0);
+				if (ArrayOfWidgets[i]->GetName() == "BackgroundBlur_0")
+				{
+					backgroundBlur = Cast<UBackgroundBlur>(ArrayOfWidgets[i]);
+					backgroundBlur->SetRenderOpacity(0);
 
-			}
-			if (ArrayOfWidgets[i]->GetName() == "VignetteOverlay")
-			{
-				VignetteOverlay = ArrayOfWidgets[i];
-				VignetteOverlay->SetRenderOpacity(0);
+				}
+				if (ArrayOfWidgets[i]->GetName() == "BloodOverlay")
+				{
+					BloodOverlay = ArrayOfWidgets[i];
+					BloodOverlay->SetRenderOpacity(0);
 
-			}
-			if (ArrayOfWidgets[i]->GetName() == "CompleteBlackout")
-			{
-				CompleteBlackout = ArrayOfWidgets[i];
-				CompleteBlackout->SetRenderOpacity(0);
+				}
+				if (ArrayOfWidgets[i]->GetName() == "VignetteOverlay")
+				{
+					VignetteOverlay = ArrayOfWidgets[i];
+					VignetteOverlay->SetRenderOpacity(0);
 
+				}
+				if (ArrayOfWidgets[i]->GetName() == "CompleteBlackout")
+				{
+					CompleteBlackout = ArrayOfWidgets[i];
+					CompleteBlackout->SetRenderOpacity(0);
+
+				}
+				if (ArrayOfWidgets[i]->GetName() == "TopOn")
+				{
+					TopOn = ArrayOfWidgets[i];
+					TopOn->SetRenderOpacity(0);
+
+				}
+				if (ArrayOfWidgets[i]->GetName() == "TopOnGlow")
+				{
+					TopOnGlow = ArrayOfWidgets[i];
+					TopOnGlow->SetRenderOpacity(0);
+
+				}
+				if (ArrayOfWidgets[i]->GetName() == "BottomOn")
+				{
+					BottomOn = ArrayOfWidgets[i];
+					BottomOn->SetRenderOpacity(0);
+
+				}
+				if (ArrayOfWidgets[i]->GetName() == "LeftOn")
+				{
+					LeftOn = ArrayOfWidgets[i];
+					LeftOn->SetRenderOpacity(0);
+
+				}
+				if (ArrayOfWidgets[i]->GetName() == "LeftOnGlow")
+				{
+					LeftOnGlow = ArrayOfWidgets[i];
+					LeftOnGlow->SetRenderOpacity(0);
+
+				}
+
+				if (ArrayOfWidgets[i]->GetName() == "RightOn")
+				{
+					RightOn = ArrayOfWidgets[i];
+					RightOn->SetRenderOpacity(1);
+
+				}
+				if (ArrayOfWidgets[i]->GetName() == "TopOff")
+				{
+					TopOff = ArrayOfWidgets[i];
+					TopOff->SetRenderOpacity(1);
+
+				}
+				if (ArrayOfWidgets[i]->GetName() == "BottomOff")
+				{
+					BottomOff = ArrayOfWidgets[i];
+					BottomOff->SetRenderOpacity(1);
+
+				}
+				if (ArrayOfWidgets[i]->GetName() == "LeftOff")
+				{
+					LeftOff = ArrayOfWidgets[i];
+					LeftOff->SetRenderOpacity(1);
+
+				}
+				if (ArrayOfWidgets[i]->GetName() == "RightOff")
+				{
+					RightOff = ArrayOfWidgets[i];
+					RightOff->SetRenderOpacity(0);
+
+				}
+				/*if (ArrayOfWidgets[i]->GetName() == "AirEfficiencyRadialBar")
+				{
+					AirEfficiencyRadialBar = ArrayOfWidgets[i];
+					UMaterial* AEBWidget = Cast<UMaterial>(AirEfficiencyRadialBar);
+
+					MaterialInstance = UMaterialInstanceDynamic::Create(AEBWidget, AEBWidget);
+
+					FString screenSizeXStr = "Worked 2";
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
+					UUserWidget* AEBUserWidget = Cast<UUserWidget>(AirEfficiencyRadialBar);
+					AirEfficiencyRadialBarComp = NewObject<UWidgetComponent>();
+					AirEfficiencyRadialBarComp->SetWidget(AEBUserWidget);
+					IsWidgetSet = true;
+
+				}*/
 			}
+
+			/*
+			FString screenSizeXStr = FString::SanitizeFloat((float)backgroundBlur->GetDesiredSize().Y);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);*/
 		}
-
-		/*
-		FString screenSizeXStr = FString::SanitizeFloat((float)backgroundBlur->GetDesiredSize().Y);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);*/
+		CharacterBarsWidget->GetAirEfficiencyImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", oldValue);
+		CharacterBarsWidget->delayedUpdateAirEfficiency = CharacterBarsWidget->initialAirEfficiency;
 	}
+
+
 }
 
 // Called every frame
@@ -184,87 +278,230 @@ void AForestController::Tick(float DeltaTime)
 			X0Y0Loaded = true;
 		}
 	}*/
-
-	if (UGameplayStatics::GetPlayerCharacter(this->GetWorld(), 0)->GetActorLocation().Z < zVal - 100)
+	if (CharacterBarsWidget)
 	{
-		CharacterBarsWidget->initialAirEfficiency -= DeltaTime/30; //deltatime = 1
-	}
-	else
-	{
-		CharacterBarsWidget->initialAirEfficiency = 1;
-	}
-	if (backgroundBlur && VignetteOverlay && BloodOverlay && CompleteBlackout)
-	{
-		//Blurry effect for Thirst, Hunger and Air Efficiency
-		if (CharacterBarsWidget->initialThirst <= 0.1 || CharacterBarsWidget->initialHunger <= 0.1 || CharacterBarsWidget->initialAirEfficiency <= 0.2)
+		if (UGameplayStatics::GetPlayerCharacter(this->GetWorld(), 0)->GetActorLocation().Z < zVal - 100)
 		{
-			float majorDeterminent = FMath::Min3(CharacterBarsWidget->initialThirst, CharacterBarsWidget->initialHunger, CharacterBarsWidget->initialAirEfficiency);
-
-			backgroundBlur->SetRenderOpacity(1 - majorDeterminent * 5);//0.2 * 5 = 1 (Blurriest); 0.0 * 5 = 0 (No Blur);
-		}
-		else {
-			if (backgroundBlur->GetRenderOpacity() > 0)
-			{
-				backgroundBlur->SetRenderOpacity(backgroundBlur->GetRenderOpacity() - 0.01);
-			}
-		}
-		
-		//Special Vignette effect for air efficiency aside from adjusting the blurriness
-		if (CharacterBarsWidget->initialAirEfficiency <= 0.2 || CharacterBarsWidget->initialHealth <= 0.2)
-		{
-			float majorDeterminent = FGenericPlatformMath::Min(CharacterBarsWidget->initialAirEfficiency, CharacterBarsWidget->initialHealth);
-			VignetteOverlay->SetRenderOpacity(1 - majorDeterminent * 5);//0.2 * 5 = 1 (Blurriest); 0.0 * 5 = 0 (No Blur);
+			CharacterBarsWidget->initialAirEfficiency -= DeltaTime / 100; //deltatime = 1
 		}
 		else
 		{
-			if (VignetteOverlay->GetRenderOpacity() > 0)
-			{
-				VignetteOverlay->SetRenderOpacity(VignetteOverlay->GetRenderOpacity() - 0.01);
-			}
+			CharacterBarsWidget->initialAirEfficiency = 1;
 		}
-
-
-		//Blood Effect for Health
-		if (CharacterBarsWidget->initialHealth <= 0.2)
+		if (backgroundBlur && VignetteOverlay && BloodOverlay && CompleteBlackout)
 		{
-			BloodOverlay->SetRenderOpacity((1 - CharacterBarsWidget->initialHealth * 5) / 2);//0.2 * 5 = 1 (Blurriest); 0.0 * 5 = 0 (No Blur);
-		} 
-		else {
-			if (BloodOverlay->GetRenderOpacity() > 0)
+			//Blurry effect for Thirst, Hunger and Air Efficiency
+			if (CharacterBarsWidget->initialThirst <= 0.1 || CharacterBarsWidget->initialHunger <= 0.1 || CharacterBarsWidget->initialAirEfficiency <= 0.2)
 			{
-				BloodOverlay->SetRenderOpacity(BloodOverlay->GetRenderOpacity() - 0.01);
+				float majorDeterminent = FMath::Min3(CharacterBarsWidget->initialThirst, CharacterBarsWidget->initialHunger, CharacterBarsWidget->initialAirEfficiency);
+
+				backgroundBlur->SetRenderOpacity(1 - majorDeterminent * 5);//0.2 * 5 = 1 (Blurriest); 0.0 * 5 = 0 (No Blur);
+			}
+			else {
+				if (backgroundBlur->GetRenderOpacity() > 0)
+				{
+					backgroundBlur->SetRenderOpacity(backgroundBlur->GetRenderOpacity() - 0.01);
+				}
+			}
+
+			//Special Vignette effect for air efficiency aside from adjusting the blurriness
+			if (CharacterBarsWidget->initialAirEfficiency <= 0.2 || CharacterBarsWidget->initialHealth <= 0.2)
+			{
+				float majorDeterminent = FGenericPlatformMath::Min(CharacterBarsWidget->initialAirEfficiency, CharacterBarsWidget->initialHealth);
+				VignetteOverlay->SetRenderOpacity(1 - majorDeterminent * 5);//0.2 * 5 = 1 (Blurriest); 0.0 * 5 = 0 (No Blur);
+			}
+			else
+			{
+				if (VignetteOverlay->GetRenderOpacity() > 0)
+				{
+					VignetteOverlay->SetRenderOpacity(VignetteOverlay->GetRenderOpacity() - 0.01);
+				}
+			}
+
+
+			//Blood Effect for Health
+			if (CharacterBarsWidget->initialHealth <= 0.2)
+			{
+				BloodOverlay->SetRenderOpacity((1 - CharacterBarsWidget->initialHealth * 5) / 2);//0.2 * 5 = 1 (Blurriest); 0.0 * 5 = 0 (No Blur);
+			}
+			else {
+				if (BloodOverlay->GetRenderOpacity() > 0)
+				{
+					BloodOverlay->SetRenderOpacity(BloodOverlay->GetRenderOpacity() - 0.01);
+				}
+			}
+
+			if (CharacterBarsWidget->initialHealth <= 0 || CharacterBarsWidget->initialAirEfficiency <= 0)
+			{
+				deathTimer += DeltaTime;
+				CompleteBlackout->SetRenderOpacity(deathTimer / 5);
+
+				if (deathTimer >= 5)
+				{
+					FString screenSizeXStr = "GAME OVER!";
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
+				}
+			}
+			else
+			{
+				if (CompleteBlackout->GetRenderOpacity() > 0)
+				{
+					deathTimer = 0;
+					CompleteBlackout->SetRenderOpacity(CompleteBlackout->GetRenderOpacity() - 0.01);
+				}
 			}
 		}
 
-		if (CharacterBarsWidget->initialHealth <= 0 || CharacterBarsWidget->initialAirEfficiency <= 0)
+
+
+		CharacterBarsWidget->initialHunger -= DeltaTime / (60 * 48);
+		CharacterBarsWidget->initialThirst -= DeltaTime / (60 * 24);
+
+		if (CharacterBarsWidget->initialHunger <= 0 || CharacterBarsWidget->initialThirst <= 0)
 		{
-			deathTimer += DeltaTime;
-			CompleteBlackout->SetRenderOpacity(deathTimer / 5);
-
-			if (deathTimer >= 5)
-			{
-				FString screenSizeXStr = "GAME OVER!";
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
-			}
+			CharacterBarsWidget->initialHealth -= DeltaTime / 5;
 		}
-		else 
+
+		/*if (MaterialInstance)
 		{
-			if (CompleteBlackout->GetRenderOpacity() > 0)
+			FString screenSizeXStr = "Worked 3";
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
+			MaterialInstance->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialAirEfficiency);
+		}*/
+		/*if (CharacterBarsWidget->AirEfficiencyRadialBarInstance)
+		{
+			CharacterBarsWidget->AirEfficiencyRadialBarInstance->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialAirEfficiency);
+		}*/
+		if (CharacterBarsWidget)
+		{
+			if (AirEfficiencyTimer <= AirEfficiencyDelay)
 			{
-				deathTimer = 0;
-				CompleteBlackout->SetRenderOpacity(CompleteBlackout->GetRenderOpacity() - 0.01);
+				AirEfficiencyTimer = AirEfficiencyTimer + DeltaTime;
 			}
+			else
+			{
+				if (oldValue > CharacterBarsWidget->initialAirEfficiency)
+				{
+					oldValue -= 0.01f;
+					CharacterBarsWidget->GetAirEfficiencyImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", oldValue);
+				}
+				else
+				{
+					CharacterBarsWidget->delayedUpdateAirEfficiency = CharacterBarsWidget->initialAirEfficiency;
+					AirEfficiencyTimer = 0;
+					oldValue = CharacterBarsWidget->initialAirEfficiency;
+				}
+			}
+
+			/*	
+			FString screenSizeXStr = FString::SanitizeFloat(newValue);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
+			if (newValue > CharacterBarsWidget->initialAirEfficiency)
+			{
+				CharacterBarsWidget->delayedUpdateAirEfficiency = newValue;
+				updatingAirEfficiencyBar = true;
+				newValue -= 3;
+			}
+			if (updatingAirEfficiencyBar)
+			{
+				if (oldValue > newValue)
+				{
+					oldValue -= 0.005f;
+					CharacterBarsWidget->GetAirEfficiencyImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", oldValue);
+				}
+				else
+				{
+					updatingAirEfficiencyBar = false;
+				}
+			}
+			*/
+
+			CharacterBarsWidget->GetHealthImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialHealth);
+			CharacterBarsWidget->GetHungerImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialHunger);
+			CharacterBarsWidget->GetThirstImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialThirst);
 		}
-	}
 
 
-
-	CharacterBarsWidget->initialHunger -= DeltaTime /(60 * 48);
-	CharacterBarsWidget->initialThirst -= DeltaTime /(60 * 24);
-
-	if (CharacterBarsWidget->initialHunger <= 0 || CharacterBarsWidget->initialThirst <= 0)
-	{
-		CharacterBarsWidget->initialHealth -= DeltaTime / 5;
+		if (CharacterBarsWidget->initialAirEfficiency > 0.75)
+		{
+			RightOn->SetRenderOpacity(1);
+			BottomOn->SetRenderOpacity(0);
+			LeftOn->SetRenderOpacity(0);
+			LeftOnGlow->SetRenderOpacity(0);
+			TopOn->SetRenderOpacity(0);
+			TopOnGlow->SetRenderOpacity(0);
+			RightOff->SetRenderOpacity(0);
+			BottomOff->SetRenderOpacity(1);
+			LeftOff->SetRenderOpacity(1);
+			TopOff->SetRenderOpacity(1);
+		}
+		else if (CharacterBarsWidget->initialAirEfficiency <= 0.75 && CharacterBarsWidget->initialAirEfficiency > 0.5) {
+			RightOn->SetRenderOpacity(0);
+			BottomOn->SetRenderOpacity(1);
+			LeftOn->SetRenderOpacity(0);
+			LeftOnGlow->SetRenderOpacity(0);
+			TopOn->SetRenderOpacity(0);
+			TopOnGlow->SetRenderOpacity(0);
+			RightOff->SetRenderOpacity(1);
+			BottomOff->SetRenderOpacity(0);
+			LeftOff->SetRenderOpacity(1);
+			TopOff->SetRenderOpacity(1);
+		}
+		else if (CharacterBarsWidget->initialAirEfficiency <= 0.5 && CharacterBarsWidget->initialAirEfficiency > 0.25) {
+			RightOn->SetRenderOpacity(0);
+			BottomOn->SetRenderOpacity(0);
+			LeftOn->SetRenderOpacity(1);
+			LeftOnGlow->SetRenderOpacity(1);
+			TopOn->SetRenderOpacity(0);
+			TopOnGlow->SetRenderOpacity(0);
+			RightOff->SetRenderOpacity(1);
+			BottomOff->SetRenderOpacity(1);
+			LeftOff->SetRenderOpacity(0);
+			TopOff->SetRenderOpacity(1);
+		}
+		else if (CharacterBarsWidget->initialAirEfficiency <= 0.25 && CharacterBarsWidget->initialAirEfficiency > 0) {
+			RightOn->SetRenderOpacity(0);
+			BottomOn->SetRenderOpacity(0);
+			LeftOn->SetRenderOpacity(0);
+			LeftOnGlow->SetRenderOpacity(0);
+			TopOn->SetRenderOpacity(flashChangeOpacity / 2 + 0.5f);
+			if (!opacityChangingUpwards)
+			{
+				//flashChangeOpacity = flashChangeOpacity - 0.02;
+				flashChangeOpacity = flashChangeOpacity - DeltaTime;
+			}
+			else if (opacityChangingUpwards)
+			{
+				//flashChangeOpacity = flashChangeOpacity + 0.02;
+				flashChangeOpacity = flashChangeOpacity + DeltaTime;
+			}
+			TopOnGlow->SetRenderOpacity(flashChangeOpacity);
+			if (flashChangeOpacity >= 1)
+			{
+				opacityChangingUpwards = false;
+			}
+			if (flashChangeOpacity <= 0)
+			{
+				opacityChangingUpwards = true;
+			}
+			RightOff->SetRenderOpacity(1);
+			BottomOff->SetRenderOpacity(1);
+			LeftOff->SetRenderOpacity(1);
+			TopOff->SetRenderOpacity(0);
+		}
+		else
+		{
+			RightOn->SetRenderOpacity(0);
+			BottomOn->SetRenderOpacity(0);
+			LeftOn->SetRenderOpacity(0);
+			LeftOnGlow->SetRenderOpacity(0);
+			TopOn->SetRenderOpacity(0);
+			TopOnGlow->SetRenderOpacity(0);
+			RightOff->SetRenderOpacity(1);
+			BottomOff->SetRenderOpacity(1);
+			LeftOff->SetRenderOpacity(1);
+			TopOff->SetRenderOpacity(1);
+		}
 	}
 
 }

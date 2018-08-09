@@ -7,6 +7,10 @@
 #include "Blueprint/WidgetTree.h"
 #include "Components/CanvasPanel.h"
 #include "Components/BackgroundBlur.h"
+#include "Components/PrimitiveComponent.h"
+#include "Materials/Material.h"
+#include "Components/Image.h"
+#include "GenericPlatform/GenericPlatformMath.h"
 #include "MyUserWidget.generated.h"
 
 /**
@@ -36,6 +40,8 @@ public:
 	
 	float initialAirEfficiency;
 
+	float delayedUpdateAirEfficiency;
+
 	float initialHealth;
 
 	float initialHunger;
@@ -43,4 +49,23 @@ public:
 	float initialThirst;
 
 	UBackgroundBlur* backgroundBlur;
+
+	UPROPERTY(BlueprintReadWrite, Category = "ConvertedDynamicInstance")
+	UMaterialInstanceDynamic* AirEfficiencyRadialBarInstance;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "MyUserWidget")
+	UImage* GetAirEfficiencyImage() const;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "MyUserWidget")
+	UImage* GetHealthImage() const;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "MyUserWidget")
+	UImage* GetHungerImage() const;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "MyUserWidget")
+	UImage* GetThirstImage() const;
+
+	UFUNCTION(BlueprintCallable, Category = "HungerBar")
+	float calculateRoundedAirEfficiency();
+
 };

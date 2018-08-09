@@ -34,6 +34,8 @@
 #include "GenericPlatform/GenericPlatformMath.h"
 #include "MyUserWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/WidgetComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Components/CanvasPanel.h"
 #include "Components/BackgroundBlur.h"
 #include "ForestController.generated.h"
@@ -295,6 +297,31 @@ private:
 	UWidget* VignetteOverlay;
 	UWidget* CompleteBlackout;
 	float deathTimer;
+	UWidget* AirEfficiencyRadialBar;
+	UWidgetComponent* AirEfficiencyRadialBarComp;
+	bool IsWidgetSet;
+
+	UWidget* TopOn;
+	UWidget* TopOnGlow;
+	UWidget* BottomOn;
+	UWidget* LeftOn;
+	UWidget* LeftOnGlow;
+	UWidget* RightOn;
+	UWidget* TopOff;
+	UWidget* BottomOff;
+	UWidget* LeftOff;
+	UWidget* RightOff;
+	float AirEfficiencyDelay;
+	float AirEfficiencyTimer;
+	float flashChangeOpacity;
+	bool opacityChangingUpwards;
+
+	float oldValue;
+	float newValue;
+	bool updatingAirEfficiencyBar;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* MaterialInstance;
 
 	
 };
