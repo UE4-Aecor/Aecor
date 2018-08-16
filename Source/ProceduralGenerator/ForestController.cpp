@@ -54,6 +54,11 @@ AForestController::AForestController()
 	oldValue = 1;
 	newValue = 0.95f;
 	updatingAirEfficiencyBar = false;
+	AirEfficiencyOffset = 0;
+	updateAirEfficiencyBar100 = false;
+
+	BarAdjustingTimer = 0;
+	BarAdjustingTime = 0.25f;
 }
 
 // Called when the game starts or when spawned
@@ -282,12 +287,27 @@ void AForestController::Tick(float DeltaTime)
 	{
 		if (UGameplayStatics::GetPlayerCharacter(this->GetWorld(), 0)->GetActorLocation().Z < zVal - 100)
 		{
-			CharacterBarsWidget->initialAirEfficiency -= DeltaTime / 100; //deltatime = 1
+			//If character is underwater
+			if (updateAirEfficiencyBar100) {
+				UpdateAirEfficiencyTo100(DeltaTime);
+			}
+			else
+			{
+				int AirEfficiencySeconds = 30; // 100
+				CharacterBarsWidget->initialAirEfficiency -= DeltaTime / AirEfficiencySeconds; //deltatime = 1
+				UpdateBars(DeltaTime);
+			}
 		}
 		else
 		{
+			//If character is above water level
 			CharacterBarsWidget->initialAirEfficiency = 1;
+			updateAirEfficiencyBar100 = true;
+			UpdateAirEfficiencyTo100(DeltaTime);
+
 		}
+
+
 		if (backgroundBlur && VignetteOverlay && BloodOverlay && CompleteBlackout)
 		{
 			//Blurry effect for Thirst, Hunger and Air Efficiency
@@ -362,108 +382,49 @@ void AForestController::Tick(float DeltaTime)
 			CharacterBarsWidget->initialHealth -= DeltaTime / 5;
 		}
 
-		/*if (MaterialInstance)
-		{
-			FString screenSizeXStr = "Worked 3";
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
-			MaterialInstance->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialAirEfficiency);
-		}*/
-		/*if (CharacterBarsWidget->AirEfficiencyRadialBarInstance)
-		{
-			CharacterBarsWidget->AirEfficiencyRadialBarInstance->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialAirEfficiency);
-		}*/
-		if (CharacterBarsWidget)
-		{
-			if (AirEfficiencyTimer <= AirEfficiencyDelay)
-			{
-				AirEfficiencyTimer = AirEfficiencyTimer + DeltaTime;
-			}
-			else
-			{
-				if (oldValue > CharacterBarsWidget->initialAirEfficiency)
-				{
-					oldValue -= 0.01f;
-					CharacterBarsWidget->GetAirEfficiencyImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", oldValue);
-				}
-				else
-				{
-					CharacterBarsWidget->delayedUpdateAirEfficiency = CharacterBarsWidget->initialAirEfficiency;
-					AirEfficiencyTimer = 0;
-					oldValue = CharacterBarsWidget->initialAirEfficiency;
-				}
-			}
-
-			/*	
-			FString screenSizeXStr = FString::SanitizeFloat(newValue);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
-			if (newValue > CharacterBarsWidget->initialAirEfficiency)
-			{
-				CharacterBarsWidget->delayedUpdateAirEfficiency = newValue;
-				updatingAirEfficiencyBar = true;
-				newValue -= 3;
-			}
-			if (updatingAirEfficiencyBar)
-			{
-				if (oldValue > newValue)
-				{
-					oldValue -= 0.005f;
-					CharacterBarsWidget->GetAirEfficiencyImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", oldValue);
-				}
-				else
-				{
-					updatingAirEfficiencyBar = false;
-				}
-			}
-			*/
-
-			CharacterBarsWidget->GetHealthImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialHealth);
-			CharacterBarsWidget->GetHungerImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialHunger);
-			CharacterBarsWidget->GetThirstImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialThirst);
-		}
-
-
 		if (CharacterBarsWidget->initialAirEfficiency > 0.75)
 		{
-			RightOn->SetRenderOpacity(1);
-			BottomOn->SetRenderOpacity(0);
-			LeftOn->SetRenderOpacity(0);
-			LeftOnGlow->SetRenderOpacity(0);
-			TopOn->SetRenderOpacity(0);
-			TopOnGlow->SetRenderOpacity(0);
-			RightOff->SetRenderOpacity(0);
-			BottomOff->SetRenderOpacity(1);
-			LeftOff->SetRenderOpacity(1);
-			TopOff->SetRenderOpacity(1);
+			if (RightOn->GetRenderOpacity() <= 1)
+			{
+				float newOpacity = RightOn->GetRenderOpacity() + DeltaTime;
+				RightOn->SetRenderOpacity(newOpacity);
+				RightOff->SetRenderOpacity(1 - newOpacity);
+			}
+			SwitchLightOff(DeltaTime, RightOn);
+
 		}
 		else if (CharacterBarsWidget->initialAirEfficiency <= 0.75 && CharacterBarsWidget->initialAirEfficiency > 0.5) {
-			RightOn->SetRenderOpacity(0);
-			BottomOn->SetRenderOpacity(1);
-			LeftOn->SetRenderOpacity(0);
-			LeftOnGlow->SetRenderOpacity(0);
-			TopOn->SetRenderOpacity(0);
-			TopOnGlow->SetRenderOpacity(0);
-			RightOff->SetRenderOpacity(1);
-			BottomOff->SetRenderOpacity(0);
-			LeftOff->SetRenderOpacity(1);
-			TopOff->SetRenderOpacity(1);
+			if (BottomOn->GetRenderOpacity() <= 1)
+			{
+				float newOpacity = BottomOn->GetRenderOpacity() + DeltaTime;
+				BottomOn->SetRenderOpacity(newOpacity);
+				BottomOff->SetRenderOpacity(1-newOpacity);
+			}
+			SwitchLightOff(DeltaTime,BottomOn);
+
 		}
 		else if (CharacterBarsWidget->initialAirEfficiency <= 0.5 && CharacterBarsWidget->initialAirEfficiency > 0.25) {
-			RightOn->SetRenderOpacity(0);
-			BottomOn->SetRenderOpacity(0);
-			LeftOn->SetRenderOpacity(1);
-			LeftOnGlow->SetRenderOpacity(1);
-			TopOn->SetRenderOpacity(0);
-			TopOnGlow->SetRenderOpacity(0);
-			RightOff->SetRenderOpacity(1);
-			BottomOff->SetRenderOpacity(1);
-			LeftOff->SetRenderOpacity(0);
-			TopOff->SetRenderOpacity(1);
+			
+			if (LeftOn->GetRenderOpacity() <= 1)
+			{
+				float newOpacity = LeftOn->GetRenderOpacity() + DeltaTime;
+				LeftOn->SetRenderOpacity(newOpacity);
+				LeftOnGlow->SetRenderOpacity(newOpacity);
+				LeftOff->SetRenderOpacity(1 - newOpacity);
+			}
+			SwitchLightOff(DeltaTime, LeftOn);
+
 		}
 		else if (CharacterBarsWidget->initialAirEfficiency <= 0.25 && CharacterBarsWidget->initialAirEfficiency > 0) {
-			RightOn->SetRenderOpacity(0);
-			BottomOn->SetRenderOpacity(0);
-			LeftOn->SetRenderOpacity(0);
-			LeftOnGlow->SetRenderOpacity(0);
+			if (TopOn->GetRenderOpacity() <= 1)
+			{
+				float newOpacity = TopOn->GetRenderOpacity() + DeltaTime;
+				TopOn->SetRenderOpacity(newOpacity);
+				TopOnGlow->SetRenderOpacity(newOpacity);
+				TopOff->SetRenderOpacity(1 - newOpacity);
+			}
+			SwitchLightOff(DeltaTime, TopOn);
+
 			TopOn->SetRenderOpacity(flashChangeOpacity / 2 + 0.5f);
 			if (!opacityChangingUpwards)
 			{
@@ -484,10 +445,6 @@ void AForestController::Tick(float DeltaTime)
 			{
 				opacityChangingUpwards = true;
 			}
-			RightOff->SetRenderOpacity(1);
-			BottomOff->SetRenderOpacity(1);
-			LeftOff->SetRenderOpacity(1);
-			TopOff->SetRenderOpacity(0);
 		}
 		else
 		{
@@ -505,6 +462,119 @@ void AForestController::Tick(float DeltaTime)
 	}
 
 }
+
+void AForestController::UpdateBars(float DeltaTime)
+{
+	if (CharacterBarsWidget)
+	{
+		if (AirEfficiencyTimer <= AirEfficiencyDelay)
+		{
+			AirEfficiencyTimer = AirEfficiencyTimer + DeltaTime;
+		}
+		else
+		{
+			if (oldValue > CharacterBarsWidget->initialAirEfficiency)
+			{
+				oldValue -= 0.01f;
+				CharacterBarsWidget->GetAirEfficiencyImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", oldValue);
+			}
+			else
+			{
+				//maybe I should identify whether it's increasing or decreasing at first?
+				CharacterBarsWidget->delayedUpdateAirEfficiency = CharacterBarsWidget->initialAirEfficiency;
+				AirEfficiencyTimer = 0;
+				oldValue = CharacterBarsWidget->initialAirEfficiency;
+			}
+		}
+
+		CharacterBarsWidget->GetHealthImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialHealth);
+		CharacterBarsWidget->GetHungerImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialHunger);
+		CharacterBarsWidget->GetThirstImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialThirst);
+	}
+}
+
+void AForestController:: UpdateAirEfficiencyTo100(float DeltaTime)
+{
+	if (CharacterBarsWidget)
+	{
+		if (AirEfficiencyTimer <= AirEfficiencyDelay)
+		{
+			AirEfficiencyTimer = AirEfficiencyTimer + DeltaTime;
+		}
+		else
+		{
+			if (oldValue < 1)
+			{
+				updateAirEfficiencyBar100 = true;
+				oldValue += 0.02f;
+				CharacterBarsWidget->GetAirEfficiencyImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", oldValue);
+			}
+			else
+			{
+				//maybe I should identify whether it's increasing or decreasing at first?
+				CharacterBarsWidget->delayedUpdateAirEfficiency = CharacterBarsWidget->initialAirEfficiency;
+				AirEfficiencyTimer = 0;
+				oldValue = CharacterBarsWidget->initialAirEfficiency;
+				updateAirEfficiencyBar100 = false;
+			}
+		}
+
+		CharacterBarsWidget->GetHealthImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialHealth);
+		CharacterBarsWidget->GetHungerImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialHunger);
+		CharacterBarsWidget->GetThirstImage()->GetDynamicMaterial()->SetScalarParameterValue("Percentage", CharacterBarsWidget->initialThirst);
+	}
+}
+
+void AForestController::SwitchLightOff(float DeltaTime, UWidget* LightTurningOn)
+{
+
+	// At first, identify which light to turn off, by identifying the only off light
+	UWidget* LightOn = nullptr;
+	UWidget* LightOff = nullptr;
+	UWidget* LightOnGlow = nullptr;
+
+	if (TopOn->GetRenderOpacity() > 0 && LightTurningOn != TopOn)
+	{
+		LightOn = TopOn;
+		LightOnGlow = TopOnGlow;
+		LightOff = TopOff;
+	}
+	else if (BottomOn->GetRenderOpacity() > 0 && LightTurningOn != BottomOn)
+	{
+		LightOn = BottomOn;
+		LightOff = BottomOff;
+	}
+	else if (LeftOn->GetRenderOpacity() > 0 && LightTurningOn != LeftOn)
+	{
+		LightOn = LeftOn;
+		LightOnGlow = LeftOnGlow;
+		LightOff = LeftOff;
+	}
+	else if (RightOn->GetRenderOpacity() > 0 && LightTurningOn != RightOn)
+	{
+		LightOn = RightOn;
+		LightOff = RightOff;
+	}
+	if (LightOff)
+	{
+		if (LightOff->GetRenderOpacity() <= 1)
+		{
+			newLightOffOpacity = LightOff->GetRenderOpacity() + DeltaTime;
+			LightOff->SetRenderOpacity(newLightOffOpacity);
+			if (LightOn == TopOn || LightOn == LeftOn)
+			{
+				LightOnGlow->SetRenderOpacity(1 - newLightOffOpacity);
+			}
+			LightOn->SetRenderOpacity(1 - newLightOffOpacity);
+		}
+		else
+		{
+			newLightOffOpacity = 0;//Reinitialize
+		}
+	}
+}
+
+
 
 FVector AForestController::generateVector()
 {
@@ -735,6 +805,7 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 	FString screenSizeXStr = FString::SanitizeFloat((float)testcounter);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
 }
+
 void AForestController::findMinMaxAndZVals(FTerrainGenerationGrid terrainGenArray)
 {
 	//Calculate position for Ocean relative to the generated terrain

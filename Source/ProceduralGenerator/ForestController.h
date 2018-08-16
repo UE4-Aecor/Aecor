@@ -318,7 +318,20 @@ private:
 
 	float oldValue;
 	float newValue;
+
+	float BarAdjustingTimer;
+	float BarAdjustingTime;
+	float AirEfficiencyOffset;
+
 	bool updatingAirEfficiencyBar;
+	bool updateAirEfficiencyBar100;
+	float newLightOffOpacity;
+	
+
+	void SwitchLightOff(float deltaTime, UWidget* LightTurningOn);
+
+	void UpdateBars(float DeltaTime);
+	void UpdateAirEfficiencyTo100(float DeltaTime);
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* MaterialInstance;
