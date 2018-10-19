@@ -13,8 +13,8 @@ AForestController::AForestController()
 	PrimaryActorTick.bCanEverTick = true;
 
 	//Initialize land spawn values
-	perlinWidth = 600;//200
-	perlinHeight = 600;//200
+	perlinWidth = 1000;//200
+	perlinHeight = 1000;//200
 	perlinSeed = FMath::RandRange(0, 2000);
 	perlinMaxHeight = 150;//150
 	//noiseDampX = 0.3;
@@ -22,7 +22,7 @@ AForestController::AForestController()
 	noiseDampX = 0.3f;
 	noiseDampY = 0.3f;
 	objectSpawnZOffset = { 0, 0, 525 };
-	landHeightPercentileCoveredByWater = 0.99;
+	landHeightPercentileCoveredByWater = 1;
 	minRaycastOffset = 100;
 	maxRaycastOffset = 10000;
 	raycastApartOffset = { 1,1,1 };
@@ -32,7 +32,8 @@ AForestController::AForestController()
 	//ConstructorHelpers::FObjectFinder<AProceduralTree> objectTwo(TEXT("Blueprint'/Game/ProceduralTree1.ProceduralTree2'"));
 	SpawnObjectsComplete = false;
 	//total map size is in (mapsize km * mapsize km)
-	mapSize = 1200;
+	
+	mapSize = 1700 + 300; //+300 for area outside of hidden barrier (hidden dimension)
 	isInitialLevel = false;
 
 	//X0Y0Loaded = false;
@@ -293,7 +294,7 @@ void AForestController::Tick(float DeltaTime)
 			}
 			else
 			{
-				int AirEfficiencySeconds = 30; // 100
+				int AirEfficiencySeconds = 100; // 100
 				CharacterBarsWidget->initialAirEfficiency -= DeltaTime / AirEfficiencySeconds; //deltatime = 1
 				UpdateBars(DeltaTime);
 			}
@@ -631,7 +632,7 @@ void AForestController::InstantiateHISMC(int x, int y, UHierarchicalInstancedSta
 			//FString screenSizeXStr = FString::SanitizeFloat((float)arrayOfTerrainGenerationAxises.Columns[mapSize / 2].Rows[mapSize / 2].Z);
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, *screenSizeXStr);
 		}
-		if (x < 600 && x > -601 && y < 600 && y > -601) 
+		if (x < mapSize / 2 && x > - mapSize / 2 - 1 && y < mapSize / 2 && y > -mapSize / 2 - 1) 
 		{
 			if (arrayOfTerrainGenerationAxises.Columns.Num() != 0)
 			hismc->AddInstance(FTransform(arrayOfTerrainGenerationAxises.Columns[y + mapSize / 2].Rows[x + mapSize / 2]));
@@ -650,6 +651,7 @@ void AForestController::GenerateSlopeHeightmap(int x, int y, int slopeOuterLengt
  // 2. X: (299 to -299) & Y: (300 to 350)||(-300 to -350)
  // 3. X: (300 to 350)||(-300 to -350) & Y: (299 to -299)
  // 4. X: (299 to -299) & Y: (299 to -299)
+	//Outer diagonal corners:
 	if (((x <= slopeOuterLengthX / 2 && x >= slopeOuterLengthX / 2 - 50) || (x <= -slopeOuterLengthX / 2 + 50 && x >= -slopeOuterLengthX / 2))
 		&& ((y <= slopeOuterLengthY / 2 && y >= slopeOuterLengthY / 2 - 50) || (y <= -slopeOuterLengthY / 2 + 50 && y >= -slopeOuterLengthY / 2)))
 	{
@@ -657,6 +659,7 @@ void AForestController::GenerateSlopeHeightmap(int x, int y, int slopeOuterLengt
 		maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
 		scaledFactor = hypotenuseFromOrigin * 1.4 / maxHypotenuseFromOrigin;
 	}
+	//Outer area long the y axis:
 	if (x <= slopeOuterLengthX / 2 - 51 && x >= -slopeOuterLengthX / 2 + 51
 		&& ((y <= slopeOuterLengthY / 2 && y >= slopeOuterLengthY / 2 - 50) || (y <= -slopeOuterLengthY / 2 + 50 && y >= -slopeOuterLengthY / 2)))
 	{
@@ -664,6 +667,7 @@ void AForestController::GenerateSlopeHeightmap(int x, int y, int slopeOuterLengt
 		maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
 		scaledFactor = hypotenuseFromOrigin * 1.4 / maxHypotenuseFromOrigin;
 	}
+	//Outer area long the x axis:
 	if (((x <= slopeOuterLengthX / 2 && x >= slopeOuterLengthX / 2 - 50) || (x <= -slopeOuterLengthX / 2 + 50 && x >= -slopeOuterLengthX / 2))
 		&& y <= slopeOuterLengthY / 2 - 51 && y >= -slopeOuterLengthY / 2 + 51)
 	{
@@ -671,6 +675,7 @@ void AForestController::GenerateSlopeHeightmap(int x, int y, int slopeOuterLengt
 		maxHypotenuseFromOrigin = FGenericPlatformMath::Sqrt(FGenericPlatformMath::Pow(50, 2) + FGenericPlatformMath::Pow(50, 2));
 		scaledFactor = hypotenuseFromOrigin * 1.4 / maxHypotenuseFromOrigin;
 	}
+	//Inner area:
 	if (x <= slopeOuterLengthX / 2 - 51 && x >= -slopeOuterLengthX / 2 + 51 && y <= slopeOuterLengthY / 2 - 51 && y >= -slopeOuterLengthY / 2 + 51)
 	{
 		scaledFactor = 0;
@@ -730,19 +735,37 @@ void AForestController::generateTerrain(UHierarchicalInstancedStaticMeshComponen
 						//300,300: pw start=(150,100),(-100,150); maxhypfromorigin bet. (0,50)  hfo = x-100
 						//600,600: pw start=(300,250),(-250,-300); maxhypfromorigin bet. (0,50)  hfo = x-250
 
+						int shallowsWidthHeight = 1000;
+
 						scaledFactor = 1;
 
-						if (x <= perlinWidth / 2 && x >= -perlinWidth / 2 && y <= perlinHeight / 2 && y >= -perlinHeight / 2)
+					
+						//shallowswidthheightwas 500, now 1000
+
+						//old:
+						//penlinWidth = 600
+						//if (x <= perlinWidth / 2 && x >= -perlinWidth / 2 && y <= perlinHeight / 2 && y >= -perlinHeight / 2)
+						if (x <= shallowsWidthHeight / 2 && x >= -shallowsWidthHeight / 2 && y <= shallowsWidthHeight / 2 && y >= -shallowsWidthHeight / 2)
 						{
-							GenerateSlopeHeightmap(x, y, perlinWidth, perlinHeight, true, false);
+							GenerateSlopeHeightmap(x, y, perlinWidth, perlinHeight, true, false);//Is Uphill
 						}
-						if (x <= 800 / 2 && x >= -800 / 2 && y <= 800 / 2 && y >= -800 / 2
+						/*if (x <= 800 / 2 && x >= -800 / 2 && y <= 800 / 2 && y >= -800 / 2
 							&& !(x <= 700 / 2 && x >= -700 / 2 && y <= 700 / 2 && y >= -700 / 2))
 						{
-							GenerateSlopeHeightmap(x, y, 800, 800, false, true);
+							GenerateSlopeHeightmap(x, y, 800, 800, false, true);//is Downhill
+						}*/
+
+						if (x <= (shallowsWidthHeight + 200) / 2 && x >= (-shallowsWidthHeight - 200) / 2 && y <= (shallowsWidthHeight + 200) / 2 && y >= (-shallowsWidthHeight - 200) / 2
+							&& !(x <= (shallowsWidthHeight + 100) / 2 && x >= (-shallowsWidthHeight - 100) / 2 && y <= (shallowsWidthHeight + 100) / 2 && y >= (-shallowsWidthHeight - 100) / 2))
+						{
+							GenerateSlopeHeightmap(x, y, shallowsWidthHeight + 200, shallowsWidthHeight + 200, false, true);//is Downhill
 						}
-						if (x <= 1200 / 2 && x >= -1200 / 2 && y <= 1200 / 2 && y >= -1200 / 2
-							&& !(x <= 800 / 2 && x >= -800 / 2 && y <= 800 / 2 && y >= -800 / 2))
+
+						//old:
+						/*if (x <= mapSize / 2 && x >= -mapSize / 2 && y <= mapSize / 2 && y >= -mapSize / 2
+							&& !(x <= 800 / 2 && x >= -800 / 2 && y <= 800 / 2 && y >= -800 / 2))*/
+						if (x <= mapSize/2 && x >= -mapSize / 2 && y <= mapSize / 2 && y >= -mapSize / 2
+							&& !(x <= (shallowsWidthHeight + 200) / 2 && x >= (-shallowsWidthHeight - 200) / 2 && y <= (shallowsWidthHeight + 200) / 2 && y >= (-shallowsWidthHeight - 200) / 2))// in between the slopes
 						{
 							scaledFactor = 0;
 						}
@@ -849,8 +872,8 @@ void AForestController::generateOcean()
 {
 
 	zValues.Sort([](const double& LHS, const double& RHS) {return LHS < RHS; });
-
-	zVal = zValues[FMath::FloorToFloat(landHeightPercentileCoveredByWater * (float)noOfGrids)-1]; //0 doesn't work; fix later
+	//zVal = zValues[FMath::FloorToFloat(landHeightPercentileCoveredByWater * (float)noOfGrids)-1]; //0 doesn't work; fix later
+	zVal = 8500; //max water height discovered by person, Adassio want all the land to stay underwater
 	OceanSpawnLoc = { (float) (minX + maxX) / 2, (float) (minY + maxY) / 2, zVal };
 	OceanSpawnRot = FRotator(0, 0, 0);
 	FActorSpawnParameters oceanSpawnParams;

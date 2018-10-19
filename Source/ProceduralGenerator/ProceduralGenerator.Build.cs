@@ -8,7 +8,7 @@ public class ProceduralGenerator : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent","UMG", "Slate", "SlateCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent","UMG", "Slate", "SlateCore" , "AIModule" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd" });
 

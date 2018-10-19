@@ -9,6 +9,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "Runtime/Engine/Public/DrawDebugHelpers.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Runtime/AIModule/Classes/AIController.h"
+#include "Runtime/AIModule/Classes/BehaviorTree/BehaviorTree.h"
+#include "Runtime/AIModule/Classes/BehaviorTree/BlackboardComponent.h"
+#include "UObject/ConstructorHelpers.h"
 #include "InventoryRobot.generated.h"
 
 UCLASS()
@@ -48,5 +53,20 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	float RequiredDistanceToTarget;
 
+public:
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "TrackerBot")
+		UNavigationPath*  GetDonPathPoint();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "TrackerBot")
+		UNavigationPath*  FlyToPathPoint();
+
+	//FVector GetDonPathPoint();
+
+private:
+
+	AAIController* InventoryRobotAIController;
+	UBehaviorTree* InventoryRobotBT;
+	UBlackboardComponent* InventoryRobotBB;
 	
 };
